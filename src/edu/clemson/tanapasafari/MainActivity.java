@@ -8,7 +8,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -40,9 +43,23 @@ public class MainActivity extends Activity {
 		
 	};
 	
+	private final OnClickListener reportButtonOnClickListener = new OnClickListener() {
+
+		@Override
+		public void onClick(View v) {
+			loadReportActivity();
+		}
+		
+	};
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		SharedPreferences prefs = getSharedPreferences("userpreferences", Context.MODE_PRIVATE);
+		Editor editor = prefs.edit(); 
+		editor.clear();
+		editor.commit();
+		
 		setContentView(R.layout.activity_main);
 		WebServiceClientHelper.doGet(getString(R.string.base_url) + "/safari.php", new ResponseHandler(){
 
@@ -66,6 +83,8 @@ public class MainActivity extends Activity {
 			}
 			
 		});
+		
+		findViewById(R.id.main_reportButton).setOnClickListener(reportButtonOnClickListener);
 	}
 
 	@Override
@@ -121,10 +140,15 @@ public class MainActivity extends Activity {
 		UrlImageViewHelper.setUrlDrawable(imageView, tileUrl);
 	}
 
-	private final void openSafariActivity(int safariId) {
+	private void openSafariActivity(int safariId) {
 		Intent safariActivityIntent = new Intent(this, SafariActivity.class);
 		safariActivityIntent.putExtra("safariId", safariId);
 		startActivity(safariActivityIntent);
+	}
+	
+	private void loadReportActivity() {
+		Intent reportIntent = new Intent(this, ReportActivity.class);
+		startActivity(reportIntent);
 	}
 
 	
