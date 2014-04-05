@@ -1,0 +1,35 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/report_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="edu.clemson.tanapasafari.ReportActivity"
+    tools:ignore="MergeRootFrame"
+    android:orientation="vertical">
+    
+     <ImageView
+        android:id="@+id/report_headerImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/main_header"/>
+     
+     <Spinner
+    	android:id="@+id/report_reportTypeSpinner"
+    	android:layout_width="fill_parent"
+    	android:layout_height="wrap_content" />
+     
+     <EditText 
+        android:id="@+id/report_content"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:minLines="5" />
+     
+     <Button 
+        android:id="@+id/report_saveButton"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/save" />
+        
+    
+    
+</LinearLayout>

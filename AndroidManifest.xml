@@ -28,6 +28,10 @@
             android:name="edu.clemson.tanapasafari.SafariActivity"
             android:label="@string/title_activity_safari" >
         </activity>
+        <activity
+            android:name="edu.clemson.tanapasafari.ReportActivity"
+            android:label="@string/title_activity_report" >
+        </activity>
     </application>
 
 </manifest>

@@ -18,7 +18,7 @@ public class User {
 	private static Integer id;
 
 	public static void getId(Context context, final UserIdListener listener) {
-		if (id == null && id < 0) {
+		if (id == null || id < 0) {
 			Log.d(Constants.LOGGING_TAG, "No user id set, checking the shared preferences.");
 			// First look in local preferences file.
 			final SharedPreferences prefs = context.getSharedPreferences("userpreferences", Context.MODE_PRIVATE);
@@ -41,7 +41,7 @@ public class User {
 							Log.d(Constants.LOGGING_TAG, "Response received from the webservice: " + r.getData());
 							// Parse out the user id returned from the server.
 							JSONObject jsonObject = new JSONObject(r.getData());
-							int userId = jsonObject.getInt("user_id");
+							int userId = jsonObject.getInt("id");
 							// Save off this new user id to shared preferences.
 							prefs.edit().putInt("user_id", userId);
 							// Since we found a user id in the local preferences, let's update the static id to the this value for future lookups.
