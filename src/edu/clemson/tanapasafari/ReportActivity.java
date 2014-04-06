@@ -10,15 +10,20 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.clemson.tanapasafari.constants.Constants;
+import edu.clemson.tanapasafari.db.TanapaDbHelper;
+import edu.clemson.tanapasafari.model.Report;
 import edu.clemson.tanapasafari.model.ReportType;
 import edu.clemson.tanapasafari.model.User;
 import edu.clemson.tanapasafari.model.UserIdListener;
+import edu.clemson.tanapasafari.service.GPSTracker;
+import edu.clemson.tanapasafari.service.GPSTrackerSingleton;
 import edu.clemson.tanapasafari.webservice.Response;
 import edu.clemson.tanapasafari.webservice.ResponseHandler;
 import edu.clemson.tanapasafari.webservice.WebServiceClientHelper;
 import android.app.Activity;
 import android.app.ActionBar;
 import android.app.Fragment;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -104,8 +109,61 @@ public class ReportActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	
+	private void saveReportForUserId(int userId) {
+		// Save report data to local database
+		Report report = new Report();
+		Spinner reportTypeSpinner = (Spinner) findViewById(R.id.report_reportTypeSpinner);
+		ReportType reportType = (ReportType) reportTypeSpinner.getSelectedItem();
+		EditText contentEditText = (EditText) findViewById(R.id.report_content);
+		report.setReportTypeId(reportType.getId());
+		report.setContent(contentEditText.getText().toString());
+		report.setTime(new Date());
+		report.setUserId(userId);
+		GPSTracker gps = GPSTrackerSingleton.getInstance(this);
+		if (gps.canGetLocation()) {
+			Location location = gps.getLocation();
+			Log.d(Constants.LOGGING_TAG, "Report Location: " + location.getLatitude() + ", " + location.getLongitude());
+			report.setLatitude(location.getLatitude());
+			report.setLongitude(location.getLongitude());
+		}
+		long reportId = TanapaDbHelper.getInstance(this).saveReport(report);
+		Log.d(Constants.LOGGING_TAG, "Saved report locally with ID of: " + reportId);
+	}
+	
 	private void saveReport() {
+		
+		User.getId(this, new UserIdListener() {
+
+			@Override
+			public void onUserId(Integer id) {
+				saveReportForUserId(id);
+			}
+			
+		});
+		
+	}
+	
+	/*
+		
+		
+		try {
+			formData.put("report_type_id", reportType.getId());
+			formData.put("content", contentEditText.getText().toString());
+			formData.put("time", Constants.ISO_8601_DATE_FORMAT.format(new Date()));
+			formData.put("user_id", id);
+			listener.onSerializedFormDataJSON(formData.toString());
+		} catch (JSONException e) {
+			Log.e(Constants.LOGGING_TAG, "Error occurred while serializing report form data to JSON.", e);
+			listener.onSerializedFormDataJSON(null);
+		}
 		final String url = getString(R.string.base_url) + "/report.php";
+		Location location = null;
+		// If location services are enabled, get current location.
+		GPSTracker gps = GPSTrackerSingleton.getInstance(this);
+		if (gps.canGetLocation()) {
+			location = gps.getLocation();
+			Log.d(Constants.LOGGING_TAG, "Report Location: " + location.getLatitude() + ", " + location.getLongitude());
+		}
 		serializeFormDataToJSON(new SerializedFormDataJSONListener(){
 
 			@Override
@@ -136,10 +194,9 @@ public class ReportActivity extends Activity {
 				ReportType reportType = (ReportType) reportTypeSpinner.getSelectedItem();
 				EditText contentEditText = (EditText) findViewById(R.id.report_content);
 				try {
-					
 					formData.put("report_type_id", reportType.getId());
 					formData.put("content", contentEditText.getText().toString());
-					formData.put("time", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(new Date()));
+					formData.put("time", Constants.ISO_8601_DATE_FORMAT.format(new Date()));
 					formData.put("user_id", id);
 					listener.onSerializedFormDataJSON(formData.toString());
 				} catch (JSONException e) {
@@ -155,5 +212,6 @@ public class ReportActivity extends Activity {
 	private interface SerializedFormDataJSONListener {
 		public void onSerializedFormDataJSON(String data);
 	}
+	*/
 
 }
