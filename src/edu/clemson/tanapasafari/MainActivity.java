@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -24,7 +25,10 @@ import android.widget.LinearLayout;
 import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
 
 import edu.clemson.tanapasafari.constants.Constants;
+import edu.clemson.tanapasafari.db.TanapaDbHelper;
 import edu.clemson.tanapasafari.model.SafariListItem;
+import edu.clemson.tanapasafari.service.GPSTracker;
+import edu.clemson.tanapasafari.service.GPSTrackerSingleton;
 import edu.clemson.tanapasafari.webservice.Response;
 import edu.clemson.tanapasafari.webservice.ResponseHandler;
 import edu.clemson.tanapasafari.webservice.WebServiceClientHelper;
@@ -55,12 +59,23 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		setContentView(R.layout.activity_main);
+		
 		SharedPreferences prefs = getSharedPreferences("userpreferences", Context.MODE_PRIVATE);
 		Editor editor = prefs.edit(); 
 		editor.clear();
 		editor.commit();
 		
-		setContentView(R.layout.activity_main);
+		// Determine if location services are turned on. If not prompt the user to turn them on.
+		GPSTracker gps = GPSTrackerSingleton.getInstance(this);
+		if (!gps.canGetLocation()) {
+			gps.showSettingsAlert();
+		}
+		
+		// Go ahead and initialize the internal database.
+		TanapaDbHelper.getInstance(this);
+		
 		WebServiceClientHelper.doGet(getString(R.string.base_url) + "/safari.php", new ResponseHandler(){
 
 			@Override
