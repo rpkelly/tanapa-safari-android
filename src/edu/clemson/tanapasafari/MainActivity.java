@@ -1,6 +1,7 @@
 package edu.clemson.tanapasafari;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -8,6 +9,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -29,6 +32,7 @@ import edu.clemson.tanapasafari.db.TanapaDbHelper;
 import edu.clemson.tanapasafari.model.SafariListItem;
 import edu.clemson.tanapasafari.service.GPSTracker;
 import edu.clemson.tanapasafari.service.GPSTrackerSingleton;
+import edu.clemson.tanapasafari.service.TanapaSyncService;
 import edu.clemson.tanapasafari.webservice.Response;
 import edu.clemson.tanapasafari.webservice.ResponseHandler;
 import edu.clemson.tanapasafari.webservice.WebServiceClientHelper;
@@ -67,14 +71,22 @@ public class MainActivity extends Activity {
 		editor.clear();
 		editor.commit();
 		
+		// Go ahead and initialize the internal database.
+		TanapaDbHelper.getInstance(this);
+		
 		// Determine if location services are turned on. If not prompt the user to turn them on.
 		GPSTracker gps = GPSTrackerSingleton.getInstance(this);
 		if (!gps.canGetLocation()) {
 			gps.showSettingsAlert();
 		}
 		
-		// Go ahead and initialize the internal database.
-		TanapaDbHelper.getInstance(this);
+		Calendar cal = Calendar.getInstance();
+				
+		Intent intent = new Intent(this, TanapaSyncService.class);
+		PendingIntent pintent = PendingIntent.getService(this, 0, intent, 0);
+		
+		AlarmManager alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+		alarm.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 60000, pintent);
 		
 		WebServiceClientHelper.doGet(getString(R.string.base_url) + "/safari.php", new ResponseHandler(){
 

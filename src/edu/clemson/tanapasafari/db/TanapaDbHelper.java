@@ -1,40 +1,32 @@
 package edu.clemson.tanapasafari.db;
 
 
+import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import edu.clemson.tanapasafari.constants.Constants;
-import edu.clemson.tanapasafari.model.Report;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+import edu.clemson.tanapasafari.constants.Constants;
+import edu.clemson.tanapasafari.model.Report;
 
 public class TanapaDbHelper extends SQLiteOpenHelper {
 
-	public static final int DATABASE_VERSION = 3;
+	public static final int DATABASE_VERSION = 7;
 	public static final String DATABASE_NAME = "tanapa.db";
 	
 	
-	private static final String[] SQL_CREATE_ENTRIES = {"CREATE TABLE USER_LOG (id INTEGER(30) PRIMARY KEY, user_id INTEGER(30) NOT NULL, latitude DECIMAL(4,6) NOT NULL, longitude DECIMAL(4,6) NOT NULL, time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)",
-		"CREATE TABLE MEDIA ( id INTEGER(30) PRIMARY KEY, type VARCHAR(20) NOT NULL, url VARCHAR(256) NOT NULL)",
-		"CREATE TABLE REPORT_TYPE (id INTEGER(30) PRIMARY KEY, name	VARCHAR(80) NOT NULL)",
-		"CREATE TABLE REPORT ( id INTEGER(30) PRIMARY KEY, report_type_id INTEGER(30) NOT NULL, content	TEXT, time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, latitude DECIMAL(4,6), longitude DECIMAL(4,6), user_id	INTEGER(30) NOT NULL, report_media_id INTEGER(30), syncronized INTEGER DEFAULT(0))",
-		"CREATE TABLE SAFARI ( id INTEGER(30) PRIMARY KEY, name	VARCHAR(80) NOT NULL, description TEXT, header_media_id INTEGER(30), footer_media_id INTEGER(30), tile_media_id	INTEGER(30))",
-		"CREATE TABLE SAFARI_WAYPOINTS (id INTEGER(30) PRIMARY KEY, sequence INTEGER(15) NOT NULL, latitude DECIMAL(4,6) NOT NULL, longitude DECIMAL(4,6) NOT NULL, safari_id INTEGER(30) NOT NULL)",
-		"CREATE TABLE SAFARI_POINTS_OF_INTEREST ( id INTEGER(30) PRIMARY KEY, name VARCHAR(80) NOT NULL, safari_id INTEGER(30) NOT NULL, latitude DECIMAL(4,6) NOT NULL, longitude DECIMAL(4,6) NOT NULL, radius INTEGER(11) NOT NULL)"
+	private static final String[] SQL_CREATE_ENTRIES = {"CREATE TABLE USER_LOG (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)",
+		"CREATE TABLE MEDIA ( id INTEGER PRIMARY KEY, type VARCHAR(20) NOT NULL, url VARCHAR(255) NOT NULL)",
+		"CREATE TABLE REPORT_TYPE (id INTEGER PRIMARY KEY, name	VARCHAR(80) NOT NULL)",
+		"CREATE TABLE REPORT ( id INTEGER PRIMARY KEY, report_type_id INTEGER NOT NULL, content	TEXT, time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, latitude DECIMAL, longitude DECIMAL, user_id INTEGER NOT NULL, report_media_id INTEGER, synchronized INTEGER DEFAULT(0))",
+		"CREATE TABLE SAFARI ( id INTEGER PRIMARY KEY, name	VARCHAR(80) NOT NULL, description TEXT, header_media_id INTEGER, footer_media_id INTEGER, tile_media_id	INTEGER)",
+		"CREATE TABLE SAFARI_WAYPOINTS (id INTEGER PRIMARY KEY, sequence INTEGER NOT NULL, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, safari_id INTEGER NOT NULL)",
+		"CREATE TABLE SAFARI_POINTS_OF_INTEREST ( id INTEGER PRIMARY KEY, name VARCHAR(80) NOT NULL, safari_id INTEGER NOT NULL, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, radius INTEGER NOT NULL)"
 	};
 	
 	private static final String[] SQL_DELETE_ENTRIES = {"DROP TABLE IF EXISTS SAFARI_POINTS_OF_INTEREST",
@@ -107,6 +99,38 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 		
 		return report.getId();
 		
+	}
+	
+	public List<Report> findUnsynchronizedReports() {
+		List<Report> reports = new ArrayList<Report>();
+		
+		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT REPORT.id report_id, report_type_id, content, time, latitude, longitude, user_id, report_media_id, MEDIA.type report_media_type, MEDIA.url report_media_url FROM REPORT LEFT JOIN MEDIA ON MEDIA.id = REPORT.report_media_id WHERE synchronized = 0", null);
+		if (cursor != null) {
+			while (cursor.moveToNext()) {
+				Report report = new Report();
+				report.setId(cursor.getLong(cursor.getColumnIndex("report_id")));
+				report.setReportTypeId(cursor.getLong(cursor.getColumnIndex("report_type_id")));
+				report.setContent(cursor.getString(cursor.getColumnIndex("content")));
+				try {
+					report.setTime(Constants.ISO_8601_DATE_FORMAT.parse(cursor.getString(cursor.getColumnIndex("time"))));
+				} catch (ParseException e) {
+					Log.e(Constants.LOGGING_TAG, "Failed converting date from database to Date class", e);
+				}
+				report.setLatitude(cursor.getDouble(cursor.getColumnIndex("latitude")));
+				report.setLongitude(cursor.getDouble(cursor.getColumnIndex("longitude")));
+				report.setUserId(cursor.getLong(cursor.getColumnIndex("user_id")));
+				reports.add(report);
+			}
+			cursor.close();
+		}
+		return reports;
+	}
+	
+	
+	public void markReportAsSynchronized(long reportId) {
+		ContentValues values = new ContentValues();
+		values.put("synchronized", 1);
+		this.getWritableDatabase().update("REPORT", values, "id = ?", new String[]{Long.toString(reportId)});
 	}
 	
 	/*
