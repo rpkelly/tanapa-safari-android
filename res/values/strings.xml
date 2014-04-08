@@ -6,5 +6,6 @@
     <string name="action_settings">Settings</string>
     <string name="base_url">http://people.cs.clemson.edu/~jmvaugh</string>
     <string name="title_activity_safari">SafariActivity</string>
+    <string name="launch_guide">Launch Guided Tour</string>
 
 </resources>

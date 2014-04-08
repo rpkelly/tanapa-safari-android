@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -72,4 +73,8 @@ public class SafariActivity extends Activity {
 	}
 	
 
+	public void launchGuide(View view){
+		Intent guideActivityIntent = new Intent(this, GuideActivity.class);
+		startActivity(guideActivityIntent);
+	}
 }
