@@ -38,6 +38,14 @@
             android:name="edu.clemson.tanapasafari.SafariActivity"
             android:label="@string/title_activity_safari" >
         </activity>
+        <activity
+            android:name="edu.clemson.tanapasafari.ReportActivity"
+            android:label="@string/title_activity_report">
+        </activity>
+        <service
+            android:name="edu.clemson.tanapasafari.service.TanapaSyncService"
+            android:label="@string/tanapa_sync_service">
+        </service>
         <meta-data
     		android:name="com.google.android.gms.version"
   	 		android:value="@integer/google_play_services_version" />
