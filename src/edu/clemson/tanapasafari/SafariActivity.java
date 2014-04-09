@@ -67,9 +67,9 @@ public class SafariActivity extends Activity {
 	}	
 	
 	private void loadSafari() {
-		UrlImageViewHelper.setUrlDrawable((ImageView) this.findViewById(R.id.headerImageView), getString(R.string.base_url) + safari.getHeaderMediaUrl());
-		UrlImageViewHelper.setUrlDrawable((ImageView) this.findViewById(R.id.footerImageView), getString(R.string.base_url) + safari.getFooterMediaUrl());
-		((TextView)this.findViewById(R.id.safariDescriptionTextView)).setText(safari.getDescription());
+		UrlImageViewHelper.setUrlDrawable((ImageView) this.findViewById(R.id.safari_headerImageView), getString(R.string.base_url) + safari.getHeaderMediaUrl());
+		UrlImageViewHelper.setUrlDrawable((ImageView) this.findViewById(R.id.safari_footerImageView), getString(R.string.base_url) + safari.getFooterMediaUrl());
+		((TextView)this.findViewById(R.id.safari_descriptionTextView)).setText(safari.getDescription());
 	}
 	
 
