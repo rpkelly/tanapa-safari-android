@@ -19,7 +19,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
+import android.view.View;
 
 public class GuideActivity extends Activity {
 	double latitude;
@@ -68,4 +70,25 @@ public class GuideActivity extends Activity {
         map.addPolyline(line);
 	}
 	
+	public void captureImage(View view){
+		captureMedia(1);
+	}
+	
+	public void captureVideo(View view){
+		captureMedia(2);
+	}
+	
+	public void captureMedia(int x){
+		Intent captureMediaIntent;
+		if(x == 1){
+			captureMediaIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+		}
+		else{
+			captureMediaIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+			captureMediaIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 15);
+		}
+	    if (captureMediaIntent.resolveActivity(getPackageManager()) != null) {
+	        startActivityForResult(captureMediaIntent, 1);
+	    }
+	}
 }
