@@ -1,4 +1,4 @@
-package edu.clemson.tanapasafari.geofence;
+package edu.clemson.tanapasafari.model;
 
 import org.json.JSONException;
 import org.json.JSONObject;

@@ -19,6 +19,7 @@ import com.google.android.gms.location.LocationStatusCodes;
 import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
 
 import edu.clemson.tanapasafari.constants.Constants;
+import edu.clemson.tanapasafari.model.PointOfInterest;
 import edu.clemson.tanapasafari.model.SafariListItem;
 import edu.clemson.tanapasafari.model.SafariWithMediaUrls;
 import edu.clemson.tanapasafari.webservice.Response;
@@ -27,7 +28,6 @@ import edu.clemson.tanapasafari.webservice.WebServiceClientHelper;
 import edu.clemson.tanapasafari.geofence.GeofenceRequester;
 import edu.clemson.tanapasafari.geofence.GeofenceSampleReceiver;
 import edu.clemson.tanapasafari.geofence.SimpleGeofence;
-import edu.clemson.tanapasafari.geofence.PointOfInterest;
 
 import android.app.Activity;
 import android.app.ActionBar;

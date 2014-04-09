@@ -5,7 +5,7 @@ import java.util.List;
 
 import edu.clemson.tanapasafari.constants.Constants;
 import edu.clemson.tanapasafari.db.TanapaDbHelper;
-import edu.clemson.tanapasafari.geofence.PointOfInterest;
+import edu.clemson.tanapasafari.model.PointOfInterest;
 import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
@@ -121,6 +121,10 @@ public class GPSTracker extends Service implements LocationListener {
 	}
 	
 	public int testpois(){
+		for (int i = 0; i < pois.size(); i++){
+			PointOfInterest p = pois.get(i);
+			addProximityAlert(p.getLatitude(), p.getLongitude(), (float) p.getRadius(), -1, intent);
+		}
 		
 	}
 	

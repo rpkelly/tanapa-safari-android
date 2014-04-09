@@ -12,7 +12,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 import edu.clemson.tanapasafari.constants.Constants;
-import edu.clemson.tanapasafari.geofence.PointOfInterest;
+import edu.clemson.tanapasafari.model.PointOfInterest;
 import edu.clemson.tanapasafari.model.Report;
 
 public class TanapaDbHelper extends SQLiteOpenHelper {
