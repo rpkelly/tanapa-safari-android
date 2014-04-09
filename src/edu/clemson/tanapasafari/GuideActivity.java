@@ -91,4 +91,9 @@ public class GuideActivity extends Activity {
 	        startActivityForResult(captureMediaIntent, 1);
 	    }
 	}
+	
+	public void loadReportActivity(View view) {
+		Intent reportIntent = new Intent(this, ReportActivity.class);
+		startActivity(reportIntent);
+	}
 }

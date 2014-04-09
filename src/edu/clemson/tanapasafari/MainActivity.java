@@ -53,14 +53,6 @@ public class MainActivity extends Activity {
 		
 	};
 	
-	private final OnClickListener reportButtonOnClickListener = new OnClickListener() {
-
-		@Override
-		public void onClick(View v) {
-			loadReportActivity();
-		}
-		
-	};
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -113,7 +105,6 @@ public class MainActivity extends Activity {
 			
 		});
 		
-		findViewById(R.id.main_reportButton).setOnClickListener(reportButtonOnClickListener);
 	}
 
 	@Override
@@ -175,10 +166,6 @@ public class MainActivity extends Activity {
 		startActivity(safariActivityIntent);
 	}
 	
-	private void loadReportActivity() {
-		Intent reportIntent = new Intent(this, ReportActivity.class);
-		startActivity(reportIntent);
-	}
 
 	protected void onResume()
 	{
