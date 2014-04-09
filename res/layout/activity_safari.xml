@@ -21,6 +21,7 @@
         android:id="@+id/safariGoToGuide"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:text="@string/launch_guide"
         android:onClick="launchGuide"/>
     
     <ImageView 

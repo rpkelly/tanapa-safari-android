@@ -1,10 +1,18 @@
 package edu.clemson.tanapasafari;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
 
+import edu.clemson.tanapasafari.constants.Constants;
+import edu.clemson.tanapasafari.db.TanapaDbHelper;
+import edu.clemson.tanapasafari.model.SafariListItem;
+import edu.clemson.tanapasafari.model.SafariWayPoint;
 import edu.clemson.tanapasafari.model.SafariWithMediaUrls;
 import edu.clemson.tanapasafari.webservice.Response;
 import edu.clemson.tanapasafari.webservice.ResponseHandler;
@@ -12,6 +20,7 @@ import edu.clemson.tanapasafari.webservice.WebServiceClientHelper;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -74,7 +83,30 @@ public class SafariActivity extends Activity {
 	
 
 	public void launchGuide(View view){
+		//Download all waypoints in case data connectivity is lost
+		WebServiceClientHelper.doGet(getString(R.string.base_url) + "/safaridetails.php?id=" + safari.getId(), new ResponseHandler(){
+			@Override
+			public void onResponse(Response r) {
+				try {
+					JSONObject jsonResponse = new JSONObject(r.getData());
+					Log.d(Constants.LOGGING_TAG, jsonResponse.toString());
+					JSONArray jsonWayPoints  = jsonResponse.getJSONArray("results");
+					TanapaDbHelper.getInstance(getBaseContext()).clearWayPoints();
+					for (int i = 0; i < jsonWayPoints.length(); i++) {
+						JSONObject currentObject = (JSONObject) jsonWayPoints.get(i);
+						SafariWayPoint wayPoint = new SafariWayPoint(currentObject);
+						TanapaDbHelper.getInstance(getBaseContext()).saveWayPoint(wayPoint);						
+					}
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}			
+		});
+		
+		//Launch Map
 		Intent guideActivityIntent = new Intent(this, GuideActivity.class);
+		guideActivityIntent.putExtra("safariId", safari.getId());
 		startActivity(guideActivityIntent);
 	}
 }
