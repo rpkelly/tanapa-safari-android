@@ -1,6 +1,11 @@
 package edu.clemson.tanapasafari.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.clemson.tanapasafari.constants.Constants;
+import edu.clemson.tanapasafari.db.TanapaDbHelper;
+import edu.clemson.tanapasafari.geofence.PointOfInterest;
 import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
@@ -23,7 +28,8 @@ public class GPSTracker extends Service implements LocationListener {
 	// flag for GPS status
 	boolean gpsEnabled = false;
 	
-	// flag for network status
+	// flag for network status\
+	
 	boolean isNetworkEnabled = false;
 	
 	boolean canGetLocation = false;
@@ -40,6 +46,8 @@ public class GPSTracker extends Service implements LocationListener {
 	
 	// Declaring a Location Manager
 	protected LocationManager locationManager;
+	
+	private List<PointOfInterest> pois;
 	
 	public GPSTracker(Context context) {
 		this.mContext = context;
@@ -105,6 +113,16 @@ public class GPSTracker extends Service implements LocationListener {
  
         return location;
     }
+	
+	public void getpois(){
+		pois = new ArrayList<PointOfInterest>();
+		pois = TanapaDbHelper.getInstance(this).getPOIs();
+		Log.d("PointsOfInterest", pois.toString());		
+	}
+	
+	public int testpois(){
+		
+	}
 	
 	/**
      * Function to get latitude
