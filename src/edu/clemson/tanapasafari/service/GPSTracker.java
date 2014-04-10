@@ -7,10 +7,12 @@ import edu.clemson.tanapasafari.constants.Constants;
 import edu.clemson.tanapasafari.db.TanapaDbHelper;
 import edu.clemson.tanapasafari.model.PointOfInterest;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -28,8 +30,7 @@ public class GPSTracker extends Service implements LocationListener {
 	// flag for GPS status
 	boolean gpsEnabled = false;
 	
-	// flag for network status\
-	
+	// flag for network status
 	boolean isNetworkEnabled = false;
 	
 	boolean canGetLocation = false;
@@ -120,10 +121,20 @@ public class GPSTracker extends Service implements LocationListener {
 		Log.d("PointsOfInterest", pois.toString());		
 	}
 	
-	public int testpois(){
+	public void testpois(){
+		// Create intent for each POI
 		for (int i = 0; i < pois.size(); i++){
 			PointOfInterest p = pois.get(i);
-			addProximityAlert(p.getLatitude(), p.getLongitude(), (float) p.getRadius(), -1, intent);
+			
+			Intent intent = new Intent();
+			PendingIntent proximityIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+			intent.putExtra("SafariId", p.getSafariId());
+			
+			locationManager.addProximityAlert(p.getLatitude(), p.getLongitude(), 
+					(float) p.getRadius(), (long) -1, proximityIntent);
+			
+			IntentFilter filter = new IntentFilter();
+			registerReceiver(new GeofenceIntentReceiver(), filter);
 		}
 		
 	}

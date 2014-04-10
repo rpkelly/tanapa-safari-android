@@ -17,6 +17,13 @@
         android:layout_width="wrap_content" 
         android:layout_height="wrap_content"/>
     
+    <Button
+        android:id="@+id/safariGoToGuide"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/launch_guide"
+        android:onClick="launchGuide"/>
+    
     <ImageView 
         android:id="@+id/safari_footerImageView"
         android:layout_width="wrap_content"

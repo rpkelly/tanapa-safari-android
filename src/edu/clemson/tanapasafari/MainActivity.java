@@ -25,6 +25,8 @@ import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
 
 import edu.clemson.tanapasafari.constants.Constants;
@@ -51,14 +53,6 @@ public class MainActivity extends Activity {
 		
 	};
 	
-	private final OnClickListener reportButtonOnClickListener = new OnClickListener() {
-
-		@Override
-		public void onClick(View v) {
-			loadReportActivity();
-		}
-		
-	};
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -111,7 +105,6 @@ public class MainActivity extends Activity {
 			
 		});
 		
-		findViewById(R.id.main_reportButton).setOnClickListener(reportButtonOnClickListener);
 	}
 
 	@Override
@@ -173,11 +166,15 @@ public class MainActivity extends Activity {
 		startActivity(safariActivityIntent);
 	}
 	
-	private void loadReportActivity() {
-		Intent reportIntent = new Intent(this, ReportActivity.class);
-		startActivity(reportIntent);
-	}
 
-	
+	protected void onResume()
+	{
+	   super.onResume();
+
+	   int googlePlayServicesAvail = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+	   if( googlePlayServicesAvail != ConnectionResult.SUCCESS){
+		   GooglePlayServicesUtil.getErrorDialog(googlePlayServicesAvail, this, 1122).show();
+	   }
+	}
 }
 

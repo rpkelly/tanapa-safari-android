@@ -4,10 +4,11 @@
     <string name="app_name">TANAPA Safari</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="base_url">http://people.cs.clemson.edu/~jmvaugh</string>
+    <string name="base_url">http://people.cs.clemson.edu/~rpkelly/tanapa-safari-web/web</string>
     <string name="title_activity_safari">SafariActivity</string>
     <string name="title_activity_report">ReportActivity</string>
     <string name="tanapa_sync_service">TanapaSyncService</string>
     <string name="save">Save</string>
+    <string name="launch_guide">Start Guided Tour</string>
 
 </resources>

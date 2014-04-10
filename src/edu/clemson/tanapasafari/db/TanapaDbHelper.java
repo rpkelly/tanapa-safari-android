@@ -14,6 +14,7 @@ import android.util.Log;
 import edu.clemson.tanapasafari.constants.Constants;
 import edu.clemson.tanapasafari.model.PointOfInterest;
 import edu.clemson.tanapasafari.model.Report;
+import edu.clemson.tanapasafari.model.SafariWayPoint;
 
 public class TanapaDbHelper extends SQLiteOpenHelper {
 
@@ -134,6 +135,7 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 		this.getWritableDatabase().update("REPORT", values, "id = ?", new String[]{Long.toString(reportId)});
 	}
 	
+
 	public void clearPOIs(){
 		this.getReadableDatabase().delete("SAFARI_POINTS_OF_INTEREST", null, null);
 	}
@@ -165,6 +167,38 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 		}
 		return pois;
 	}
+	
+	public void clearWayPoints(){
+		this.getReadableDatabase().delete("SAFARI_WAYPOINTS", null, null);
+	}
+	
+	public void saveWayPoint(SafariWayPoint wp){
+		ContentValues wayPointContentValues = new ContentValues();
+		wayPointContentValues.put("sequence", wp.getSequence());
+		wayPointContentValues.put("latitude", wp.getLatitude());
+		wayPointContentValues.put("longitude", wp.getLongitude());
+		wayPointContentValues.put("safari_id", wp.getSafariId());
+		Log.d("inserted waypoint", "Waypoint sequence:" + wp.getSequence());
+		this.getWritableDatabase().insert("SAFARI_WAYPOINTS", null, wayPointContentValues);
+	}
+	
+	public List<SafariWayPoint> getWayPoints(int safari_id){
+		List<SafariWayPoint> waypoints = new ArrayList<SafariWayPoint>();
+		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT * FROM SAFARI_WAYPOINTS WHERE safari_id = "+ safari_id +" ORDER BY sequence ASC", null);
+		if (cursor != null) {
+			while (cursor.moveToNext()) {
+				SafariWayPoint wp = new SafariWayPoint(cursor.getInt(cursor.getColumnIndex("id")), 
+						cursor.getInt(cursor.getColumnIndex("sequence")), 
+						cursor.getDouble(cursor.getColumnIndex("latitude")), 
+						cursor.getDouble(cursor.getColumnIndex("longitude")), 
+						cursor.getInt(cursor.getColumnIndex("safari_id")));
+				waypoints.add(wp);
+			}
+			cursor.close();
+		}
+		return waypoints;
+	}
+	
 	/*
 	public long saveTranslation(Translation t) {
 		ContentValues pigLatinTextValues = new ContentValues();

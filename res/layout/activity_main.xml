@@ -7,11 +7,6 @@
     tools:ignore="MergeRootFrame" 
     android:orientation="vertical">
 
-    <Button
-        android:id="@+id/main_reportButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Button" />
 
     <ImageView
         android:id="@+id/main_headerImageView"

@@ -21,6 +21,9 @@ import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
 import edu.clemson.tanapasafari.constants.Constants;
 import edu.clemson.tanapasafari.model.PointOfInterest;
 import edu.clemson.tanapasafari.model.SafariListItem;
+import edu.clemson.tanapasafari.db.TanapaDbHelper;
+import edu.clemson.tanapasafari.model.SafariListItem;
+import edu.clemson.tanapasafari.model.SafariWayPoint;
 import edu.clemson.tanapasafari.model.SafariWithMediaUrls;
 import edu.clemson.tanapasafari.webservice.Response;
 import edu.clemson.tanapasafari.webservice.ResponseHandler;
@@ -44,7 +47,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -105,58 +107,37 @@ public class SafariActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}	
 	
-	/*
-	public void getGeofences(){
-		WebServiceClientHelper.doGet(getString(R.string.base_url) + "/poi.php", new ResponseHandler(){
-			// Populate waypoint list from server
-			public void onResponse(Response r) {
-				pois = new ArrayList<PointOfInterest>();
-				try {
-					JSONObject jsonResponse = new JSONObject(r.getData());
-					Log.d(Constants.LOGGING_TAG, jsonResponse.toString());
-					JSONArray jsonWaypoints  = jsonResponse.getJSONArray("results");
-					for (int i = 0; i < jsonWaypoints.length(); i++) {
-						JSONObject currentObject = (JSONObject) jsonWaypoints.get(i);
-						PointOfInterest waypoint = new PointOfInterest(currentObject);
-						pois.add(waypoint);
-					}
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
-			}			
-		});
-		geofences = new ArrayList<Geofence>();
-		// Populate list of geofences from waypoint list
-		for (int i = 0; i < pois.size(); i++){
-			PointOfInterest current = pois.get(i);
-			if (current.getSafariId() == safariId){ // Check that waypoint is for this safari
-				SimpleGeofence simplegf = new SimpleGeofence(
-						Integer.toString(current.getId()),
-						current.getLatitude(),
-						current.getLongitude(),
-						(float) current.getRadius(),
-						-1,1);
-				Geofence geofence = simplegf.toGeofence();
-				geofences.add(geofence);
-			}	
-		}		
-	}
-	
-	public void registerGeofences(){
-
-		// Start request, fails if request in progress. 
-		try{
-			geofenceRequester.addGeofences(geofences);
-		} catch (UnsupportedOperationException e){
-			Toast.makeText(this, "Can't add geofences, previous request hasn't finished", Toast.LENGTH_LONG).show();
-		}
-	}
-	
-	*/
 	private void loadSafari() {
 		UrlImageViewHelper.setUrlDrawable((ImageView) this.findViewById(R.id.safari_headerImageView), getString(R.string.base_url) + safari.getHeaderMediaUrl());
 		UrlImageViewHelper.setUrlDrawable((ImageView) this.findViewById(R.id.safari_footerImageView), getString(R.string.base_url) + safari.getFooterMediaUrl());
 		((TextView)this.findViewById(R.id.safari_descriptionTextView)).setText(safari.getDescription());
 	}
 
+	public void launchGuide(View view){
+		//Download all waypoints in case data connectivity is lost
+		WebServiceClientHelper.doGet(getString(R.string.base_url) + "/safaridetails.php?id=" + safari.getId(), new ResponseHandler(){
+			@Override
+			public void onResponse(Response r) {
+				try {
+					JSONObject jsonResponse = new JSONObject(r.getData());
+					Log.d(Constants.LOGGING_TAG, jsonResponse.toString());
+					JSONArray jsonWayPoints  = jsonResponse.getJSONArray("results");
+					TanapaDbHelper.getInstance(getBaseContext()).clearWayPoints();
+					for (int i = 0; i < jsonWayPoints.length(); i++) {
+						JSONObject currentObject = (JSONObject) jsonWayPoints.get(i);
+						SafariWayPoint wayPoint = new SafariWayPoint(currentObject);
+						TanapaDbHelper.getInstance(getBaseContext()).saveWayPoint(wayPoint);						
+					}
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}			
+		});
+		
+		//Launch Map
+		Intent guideActivityIntent = new Intent(this, GuideActivity.class);
+		guideActivityIntent.putExtra("safariId", safari.getId());
+		startActivity(guideActivityIntent);
+	}
 }
