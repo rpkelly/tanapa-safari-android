@@ -134,6 +134,10 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 		this.getWritableDatabase().update("REPORT", values, "id = ?", new String[]{Long.toString(reportId)});
 	}
 	
+	public void clearPOIs(){
+		this.getReadableDatabase().delete("SAFARI_POINTS_OF_INTEREST", null, null);
+	}
+	
 	public void clearWayPoints(){
 		this.getReadableDatabase().delete("SAFARI_WAYPOINTS", null, null);
 	}

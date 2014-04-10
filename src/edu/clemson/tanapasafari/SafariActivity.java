@@ -89,8 +89,11 @@ public class SafariActivity extends Activity {
 			public void onResponse(Response r) {
 				try {
 					JSONObject jsonResponse = new JSONObject(r.getData());
-					Log.d(Constants.LOGGING_TAG, jsonResponse.toString());
-					JSONArray jsonWayPoints  = jsonResponse.getJSONArray("results");
+					JSONArray jsonWayPoints  = jsonResponse.getJSONArray("waypoints");
+					JSONArray jsonPOI = jsonResponse.getJSONArray("points_of_interest");
+					Log.d(Constants.LOGGING_TAG, jsonWayPoints.toString());
+					Log.d(Constants.LOGGING_TAG, jsonPOI.toString());
+					TanapaDbHelper.getInstance(getBaseContext()).clearPOIs();
 					TanapaDbHelper.getInstance(getBaseContext()).clearWayPoints();
 					for (int i = 0; i < jsonWayPoints.length(); i++) {
 						JSONObject currentObject = (JSONObject) jsonWayPoints.get(i);
