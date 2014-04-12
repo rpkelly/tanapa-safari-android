@@ -3,6 +3,7 @@ package edu.clemson.tanapasafari.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.clemson.tanapasafari.GuideActivity;
 import edu.clemson.tanapasafari.constants.Constants;
 import edu.clemson.tanapasafari.db.TanapaDbHelper;
 import edu.clemson.tanapasafari.model.PointOfInterest;
@@ -24,7 +25,7 @@ import android.util.Log;
 // Thanks to http://www.androidhive.info/2012/07/android-gps-location-manager-tutorial/
 
 public class GPSTracker extends Service implements LocationListener {
-
+	
 	private final Context mContext;
 	
 	// flag for GPS status
@@ -48,11 +49,15 @@ public class GPSTracker extends Service implements LocationListener {
 	// Declaring a Location Manager
 	protected LocationManager locationManager;
 	
+	
+	
 	private List<PointOfInterest> pois;
 	
 	public GPSTracker(Context context) {
 		this.mContext = context;
 		getLocation();
+		getPOIs();
+		addPOIs();
 	}
 	
 	public Location getLocation() {
@@ -115,18 +120,19 @@ public class GPSTracker extends Service implements LocationListener {
         return location;
     }
 	
-	public void getpois(){
+	public void getPOIs(){
 		pois = new ArrayList<PointOfInterest>();
 		pois = TanapaDbHelper.getInstance(this).getPOIs();
 		Log.d("PointsOfInterest", pois.toString());		
 	}
 	
-	public void testpois(){
+	public void addPOIs(){
+		
 		// Create intent for each POI
 		for (int i = 0; i < pois.size(); i++){
 			PointOfInterest p = pois.get(i);
 			
-			Intent intent = new Intent();
+			Intent intent = new Intent(this, GuideActivity.class);
 			PendingIntent proximityIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
 			intent.putExtra("SafariId", p.getSafariId());
 			
