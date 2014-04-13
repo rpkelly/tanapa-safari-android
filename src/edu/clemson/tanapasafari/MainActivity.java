@@ -15,7 +15,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -59,7 +58,7 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.activity_main);
-		
+				
 		SharedPreferences prefs = getSharedPreferences("userpreferences", Context.MODE_PRIVATE);
 		Editor editor = prefs.edit(); 
 		editor.clear();
@@ -97,7 +96,7 @@ public class MainActivity extends Activity {
 						safaris.add(safari);
 					}
 				} catch (JSONException e) {
-					// TODO Auto-generated catch block
+					
 					e.printStackTrace();
 				}
 				displaySafaris(safaris);
@@ -147,7 +146,7 @@ public class MainActivity extends Activity {
 			// If currentRowLayout is null, create a new horizontal linear layout.
 			currentRowLayout = new LinearLayout(getBaseContext());
 			currentRowLayout.setOrientation(LinearLayout.HORIZONTAL);
-			((LinearLayout) this.findViewById(R.id.container)).addView(currentRowLayout);
+			((LinearLayout) this.findViewById(R.id.main_content)).addView(currentRowLayout);
 			rowFilled = false;
 		} 
 		

@@ -1,17 +1,26 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/container"
+    android:id="@+id/main_scrollview"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="edu.clemson.tanapasafari.MainActivity"
-    tools:ignore="MergeRootFrame" 
-    android:orientation="vertical">
+    tools:ignore="MergeRootFrame">
+    
+    <LinearLayout 
+        android:id="@+id/main_content"
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+        
+    	<ImageView
+        	android:id="@+id/main_headerImageView"
+        	android:layout_width="wrap_content"
+        	android:layout_height="wrap_content"
+        	android:src="@drawable/main_header" />
+    	    
+    </LinearLayout>
 
 
-    <ImageView
-        android:id="@+id/main_headerImageView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/main_header" />
+    
 
-</LinearLayout>
+</ScrollView>

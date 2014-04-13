@@ -1,5 +1,8 @@
 package edu.clemson.tanapasafari.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.clemson.tanapasafari.constants.Constants;
 import android.app.AlertDialog;
 import android.app.Service;
@@ -20,11 +23,13 @@ public class GPSTracker extends Service implements LocationListener {
 
 	private final Context mContext;
 	
+	private List<LocationListener> locationListeners = new ArrayList<LocationListener>();;
+	
 	// flag for GPS status
 	boolean gpsEnabled = false;
 	
 	// flag for network status
-	boolean isNetworkEnabled = false;
+	//boolean isNetworkEnabled = false;
 	
 	boolean canGetLocation = false;
 	
@@ -33,10 +38,10 @@ public class GPSTracker extends Service implements LocationListener {
 	double longitude; // longitude
 	
 	// The minimum distance to change Updates in meters
-	private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10; // 10 meters
+	private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 5; // 5 meters
 	
 	// The minimum time between updates in milliseconds
-	private static final long MIN_TIME_BW_UPDATES = 6000; // 1 minute
+	private static final long MIN_TIME_BW_UPDATES = 1000; // 1 second
 	
 	// Declaring a Location Manager
 	protected LocationManager locationManager;
@@ -54,31 +59,15 @@ public class GPSTracker extends Service implements LocationListener {
             // getting GPS status
             gpsEnabled = locationManager
                     .isProviderEnabled(LocationManager.GPS_PROVIDER);
- 
+            /*
             // getting network status
             isNetworkEnabled = locationManager
                     .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
- 
-            if (!gpsEnabled && !isNetworkEnabled) {
+ 			*/s
+            if (!gpsEnabled) {
                 // no network provider is enabled
             } else {
                 this.canGetLocation = true;
-                // First get location from Network Provider
-                if (isNetworkEnabled) {
-                    locationManager.requestLocationUpdates(
-                            LocationManager.NETWORK_PROVIDER,
-                            MIN_TIME_BW_UPDATES,
-                            MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-                    Log.d("Network", "Network");
-                    if (locationManager != null) {
-                        location = locationManager
-                                .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                        if (location != null) {
-                            latitude = location.getLatitude();
-                            longitude = location.getLongitude();
-                        }
-                    }
-                }
                 // if GPS Enabled get lat/long using GPS Services
                 if (gpsEnabled) {
                     if (location == null) {
@@ -90,10 +79,6 @@ public class GPSTracker extends Service implements LocationListener {
                         if (locationManager != null) {
                             location = locationManager
                                     .getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                            if (location != null) {
-                                latitude = location.getLatitude();
-                                longitude = location.getLongitude();
-                            }
                         }
                     }
                 }
@@ -106,31 +91,8 @@ public class GPSTracker extends Service implements LocationListener {
         return location;
     }
 	
+	
 	/**
-     * Function to get latitude
-     * */
-    public double getLatitude(){
-        if(location != null){
-            latitude = location.getLatitude();
-        }
-         
-        // return latitude
-        return latitude;
-    }
-     
-    /**
-     * Function to get longitude
-     * */
-    public double getLongitude(){
-        if(location != null){
-            longitude = location.getLongitude();
-        }
-         
-        // return longitude
-        return longitude;
-    }
-    
-    /**
      * Function to check if best network provider
      * @return boolean
      * */
@@ -189,9 +151,17 @@ public class GPSTracker extends Service implements LocationListener {
 		return null;
 	}
 
+	
+	public void registerLocationListener(LocationListener l) {
+		this.locationListeners.add(l);
+	}
+	
 	@Override
 	public void onLocationChanged(Location location) {
 		Log.d(Constants.LOGGING_TAG, "Location updated in GPSTracker: " + location.toString());
+		for ( LocationListener l : locationListeners ) {
+			l.onLocationChanged(location);
+		}
 	}
 
 	@Override
@@ -209,7 +179,12 @@ public class GPSTracker extends Service implements LocationListener {
 	@Override
 	public void onProviderDisabled(String provider) {
 		// TODO Auto-generated method stub
-		
 	}
+	
+	
+	
+	
+	
+	
 
 }
