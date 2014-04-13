@@ -116,10 +116,10 @@ public class GuideActivity extends Activity {
 					showToastText("Entered POI Geofence: " + poi.getName());
 				}
 			} else {
-				poi.setInGeofence(false);
 				if (poi.isInGeofence()) {
 					showToastText("Exited POI Geofence: " + poi.getName());
 				}
+				poi.setInGeofence(false);
 			}
 		}
 	}
