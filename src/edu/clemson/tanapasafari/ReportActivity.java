@@ -1,6 +1,5 @@
 package edu.clemson.tanapasafari;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -9,6 +8,18 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
+import android.location.Location;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Spinner;
 import edu.clemson.tanapasafari.constants.Constants;
 import edu.clemson.tanapasafari.db.TanapaDbHelper;
 import edu.clemson.tanapasafari.model.Report;
@@ -20,23 +31,6 @@ import edu.clemson.tanapasafari.service.GPSTrackerSingleton;
 import edu.clemson.tanapasafari.webservice.Response;
 import edu.clemson.tanapasafari.webservice.ResponseHandler;
 import edu.clemson.tanapasafari.webservice.WebServiceClientHelper;
-import android.app.Activity;
-import android.app.ActionBar;
-import android.app.Fragment;
-import android.location.Location;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Spinner;
-import android.os.Build;
 
 public class ReportActivity extends Activity {
 

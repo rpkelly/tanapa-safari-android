@@ -3,8 +3,6 @@ package edu.clemson.tanapasafari.model;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.util.Log;
-
 public class SafariWithMediaUrls extends SafariListItem {
 	
 	private String headerMediaType;

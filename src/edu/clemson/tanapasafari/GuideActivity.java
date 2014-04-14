@@ -3,6 +3,17 @@ package edu.clemson.tanapasafari;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Color;
+import android.location.Location;
+import android.location.LocationListener;
+import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
+
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -10,22 +21,16 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import edu.clemson.tanapasafari.db.TanapaDbHelper;
+import edu.clemson.tanapasafari.model.SafariPointOfInterest;
 import edu.clemson.tanapasafari.model.SafariWayPoint;
 import edu.clemson.tanapasafari.service.GPSTracker;
 import edu.clemson.tanapasafari.service.GPSTrackerSingleton;
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.graphics.Color;
-import android.location.LocationManager;
-import android.os.Bundle;
-import android.provider.MediaStore;
-import android.util.Log;
-import android.view.View;
 
 public class GuideActivity extends Activity {
-	double latitude;
-	double longitude;
+
+	
+	private List<SafariPointOfInterest> safariPointsOfInterest;
+	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,17 +44,16 @@ public class GuideActivity extends Activity {
         if(!gpsTracker.canGetLocation()){
         	gpsTracker.showSettingsAlert();
         }
-        if(gpsTracker.canGetLocation()){
-        	latitude = gpsTracker.getLatitude();
-        	longitude = gpsTracker.getLongitude();
-        }
-        
         GoogleMap map = ((MapFragment)getFragmentManager().findFragmentById(R.id.map)).getMap();
-        map.setMyLocationEnabled(true);
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                new LatLng(latitude, longitude), 12));
-        map.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-        
+        if(gpsTracker.canGetLocation()){
+        	Location location = gpsTracker.getLocation();
+        	
+            map.setMyLocationEnabled(true);
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                    new LatLng(location.getLatitude(), location.getLongitude()), 15));
+            map.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+        	
+        }
         
         //query internal database for waypoints
         List<SafariWayPoint> wayPoints = new ArrayList<SafariWayPoint>();
@@ -68,7 +72,58 @@ public class GuideActivity extends Activity {
         
         //add the line
         map.addPolyline(line);
+        
+        
+        safariPointsOfInterest = TanapaDbHelper.getInstance(getBaseContext()).getSafariPointsOfInterest(safariId);
+        gpsTracker.registerLocationListener(new LocationListener() {
+
+			@Override
+			public void onLocationChanged(Location location) {
+				checkPointsOfInterest(location);
+				
+			}
+
+			@Override
+			public void onStatusChanged(String provider, int status,
+					Bundle extras) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onProviderEnabled(String provider) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onProviderDisabled(String provider) {
+				// TODO Auto-generated method stub
+				
+			}
+    	});
+        
 	}
+        	
+        	
+	
+	
+	private void checkPointsOfInterest(Location l) {
+		for ( SafariPointOfInterest poi : safariPointsOfInterest) {
+			if (l.distanceTo(poi.getLocation()) < poi.getRadius()) {
+				if (!poi.isInGeofence()) {
+					poi.setInGeofence(true);
+					showToastText("Entered POI Geofence: " + poi.getName());
+				}
+			} else {
+				if (poi.isInGeofence()) {
+					showToastText("Exited POI Geofence: " + poi.getName());
+				}
+				poi.setInGeofence(false);
+			}
+		}
+	}
+	
 	
 	public void captureImage(View view){
 		captureMedia(1);
@@ -96,4 +151,10 @@ public class GuideActivity extends Activity {
 		Intent reportIntent = new Intent(this, ReportActivity.class);
 		startActivity(reportIntent);
 	}
+	
+	private void showToastText(String msg) {
+		Toast.makeText(getApplicationContext(), msg,
+				Toast.LENGTH_LONG).show();
+	}
+	
 }
