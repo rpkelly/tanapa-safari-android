@@ -1,22 +1,9 @@
 package edu.clemson.tanapasafari;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
-
-import edu.clemson.tanapasafari.constants.Constants;
-import edu.clemson.tanapasafari.db.TanapaDbHelper;
-import edu.clemson.tanapasafari.model.SafariListItem;
-import edu.clemson.tanapasafari.model.SafariWayPoint;
-import edu.clemson.tanapasafari.model.SafariWithMediaUrls;
-import edu.clemson.tanapasafari.webservice.Response;
-import edu.clemson.tanapasafari.webservice.ResponseHandler;
-import edu.clemson.tanapasafari.webservice.WebServiceClientHelper;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -26,6 +13,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
+
+import edu.clemson.tanapasafari.constants.Constants;
+import edu.clemson.tanapasafari.db.TanapaDbHelper;
+import edu.clemson.tanapasafari.model.SafariPointOfInterest;
+import edu.clemson.tanapasafari.model.SafariWayPoint;
+import edu.clemson.tanapasafari.model.SafariWithMediaUrls;
+import edu.clemson.tanapasafari.webservice.Response;
+import edu.clemson.tanapasafari.webservice.ResponseHandler;
+import edu.clemson.tanapasafari.webservice.WebServiceClientHelper;
 
 public class SafariActivity extends Activity {
 	
@@ -88,25 +86,39 @@ public class SafariActivity extends Activity {
 			@Override
 			public void onResponse(Response r) {
 				try {
-					JSONObject jsonResponse = new JSONObject(r.getData());
-					JSONArray jsonWayPoints  = jsonResponse.getJSONArray("waypoints");
-					JSONArray jsonPOI = jsonResponse.getJSONArray("points_of_interest");
-					Log.d(Constants.LOGGING_TAG, jsonWayPoints.toString());
-					Log.d(Constants.LOGGING_TAG, jsonPOI.toString());
-					TanapaDbHelper.getInstance(getBaseContext()).clearPOIs();
 					TanapaDbHelper.getInstance(getBaseContext()).clearWayPoints();
-					for (int i = 0; i < jsonWayPoints.length(); i++) {
-						JSONObject currentObject = (JSONObject) jsonWayPoints.get(i);
-						SafariWayPoint wayPoint = new SafariWayPoint(currentObject);
-						TanapaDbHelper.getInstance(getBaseContext()).saveWayPoint(wayPoint);						
+					TanapaDbHelper.getInstance(getBaseContext()).clearPointsOfInterest();
+					JSONObject jsonResponse = new JSONObject(r.getData());
+					Log.d(Constants.LOGGING_TAG, jsonResponse.toString());
+					JSONObject results = jsonResponse.getJSONObject("results");
+					if ( results != null ) {
+						if (results.has("waypoints")) {
+							JSONArray jsonWayPoints = results.getJSONArray("waypoints");
+							for (int i = 0; i < jsonWayPoints.length(); i++) {
+								JSONObject currentObject = (JSONObject) jsonWayPoints.get(i);
+								SafariWayPoint wayPoint = new SafariWayPoint(currentObject);
+								TanapaDbHelper.getInstance(getBaseContext()).saveWayPoint(wayPoint);						
+							}
+						}
+						if (results.has("points_of_interest")) {
+							JSONArray jsonPointsOfInterest = results.getJSONArray("points_of_interest");
+							for (int i= 0; i < jsonPointsOfInterest.length(); i++) {
+								JSONObject currentObject = (JSONObject) jsonPointsOfInterest.get(i);
+								SafariPointOfInterest safariPointOfInterest = new SafariPointOfInterest(currentObject);
+								TanapaDbHelper.getInstance(getBaseContext()).saveSafariPointOfInterest(safariPointOfInterest);
+							}
+							
+						}
+						loadGuideActivity();
 					}
 				} catch (JSONException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}			
 		});
-		
+	}
+	
+	private void loadGuideActivity() {
 		//Launch Map
 		Intent guideActivityIntent = new Intent(this, GuideActivity.class);
 		guideActivityIntent.putExtra("safariId", safari.getId());

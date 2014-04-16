@@ -13,6 +13,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 import edu.clemson.tanapasafari.constants.Constants;
 import edu.clemson.tanapasafari.model.Report;
+import edu.clemson.tanapasafari.model.SafariPointOfInterest;
 import edu.clemson.tanapasafari.model.SafariWayPoint;
 
 public class TanapaDbHelper extends SQLiteOpenHelper {
@@ -139,7 +140,11 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 	}
 	
 	public void clearWayPoints(){
-		this.getReadableDatabase().delete("SAFARI_WAYPOINTS", null, null);
+		this.getWritableDatabase().delete("SAFARI_WAYPOINTS", null, null);
+	}
+	
+	public void clearPointsOfInterest() {
+		this.getWritableDatabase().delete("SAFARI_POINTS_OF_INTEREST", null, null);
 	}
 	
 	public void saveWayPoint(SafariWayPoint wp){
@@ -168,143 +173,35 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 		}
 		return waypoints;
 	}
-	/*
-	public long saveTranslation(Translation t) {
-		ContentValues pigLatinTextValues = new ContentValues();
-		pigLatinTextValues.put("text", t.getPigLatinText());
-		long pigLatinTextId = this.getWritableDatabase().insert("PIGLATIN_TEXT", "text", pigLatinTextValues);
-		
-		ContentValues englishTextValues = new ContentValues();
-		englishTextValues.put("text", t.getEnglishText());
-		long englishTextId = this.getWritableDatabase().insert("ENGLISH_TEXT", "text", englishTextValues);
-		
-		ContentValues translationHistoryValues = new ContentValues();
-		translationHistoryValues.put("english_text_id", englishTextId);
-		translationHistoryValues.put("piglatin_text_id", pigLatinTextId);
-		long translationHistoryId = this.getWritableDatabase().insert("TRANSLATION_HISTORY", "translation_time", translationHistoryValues);
-		
-		return translationHistoryId;
+	
+	public void saveSafariPointOfInterest(SafariPointOfInterest poi) {
+		ContentValues poiContentValues = new ContentValues();
+		poiContentValues.put("id", poi.getId());
+		poiContentValues.put("name", poi.getName());
+		poiContentValues.put("latitude", poi.getLatitude());
+		poiContentValues.put("longitude", poi.getLongitude());
+		poiContentValues.put("radius", poi.getRadius());
+		poiContentValues.put("safari_id", poi.getSafariId());
+		this.getWritableDatabase().insert("SAFARI_POINTS_OF_INTEREST", null, poiContentValues);
 	}
 	
-	
-	public List<Translation> getTranslationHistory() {
-		List<Translation> translationHistory = new ArrayList<Translation>();
-		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT TH.id, PL.text piglatin_text, EN.text english_text "
-				+ "FROM TRANSLATION_HISTORY TH "
-				+ "JOIN ENGLISH_TEXT EN ON EN.id = TH.english_text_id "
-				+ "JOIN PIGLATIN_TEXT PL ON PL.id = TH.piglatin_text_id "
-				+ "ORDER BY translation_time DESC;", null);
-		if (cursor != null) {
-			while(cursor.moveToNext()) {
-				Translation t = new Translation();
-				t.setEnglishText(cursor.getString(cursor.getColumnIndex("english_text")));
-				t.setPigLatinText(cursor.getString(cursor.getColumnIndex("piglatin_text")));
-				translationHistory.add(t);
-			}
-			cursor.close();
-		}
-		return translationHistory;
-	}
-	
-	public long savePiglatinEnglishMapping(String piglatin, String english) {
-		if (getEnglishWordForPigLatin(piglatin) != null) {
-			return -1;
-		}
-		ContentValues mapping = new ContentValues();
-		mapping.put("piglatin_word", piglatin);
-		mapping.put("english_word", english);
-		long id = -1;
-		id = this.getWritableDatabase().insert("PIGLATIN_ENGLISH_MAPPING", "english_word", mapping);
-		return id;
-	}
-	
-	
-	public Map<String, String> getPiglatinEnglishMappings() {
-		Map<String, String> mappings = new HashMap<String, String>();
-		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT piglatin_word, english_word FROM PIGLATIN_ENGLISH_MAPPING", null);
+	public List<SafariPointOfInterest> getSafariPointsOfInterest(int safariId) {
+		List<SafariPointOfInterest> results = new ArrayList<SafariPointOfInterest>();
+		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT * FROM SAFARI_POINTS_OF_INTEREST", null);
 		if (cursor != null) {
 			while (cursor.moveToNext()) {
-				mappings.put(cursor.getString(cursor.getColumnIndex("piglatin_word")), cursor.getString(cursor.getColumnIndex("english_word")));
+				SafariPointOfInterest poi = new SafariPointOfInterest();
+				poi.setId(cursor.getInt(cursor.getColumnIndex("id")));
+				poi.setName(cursor.getString(cursor.getColumnIndex("name")));
+				poi.setLatitude(cursor.getDouble(cursor.getColumnIndex("latitude")));
+				poi.setLongitude(cursor.getDouble(cursor.getColumnIndex("longitude")));
+				poi.setRadius(cursor.getInt(cursor.getColumnIndex("radius")));
+				poi.setSafariId(cursor.getInt(cursor.getColumnIndex("safari_id")));
+				results.add(poi);
 			}
 			cursor.close();
 		}
-		return mappings;
+		return results;
 	}
-	
-	public int deletePiglatinEnglishMapping(String piglatin) {
-		return this.getWritableDatabase().delete("PIGLATIN_ENGLISH_MAPPING", "piglatin_word = ?", new String[]{piglatin});
-	}
-	
-	public int updatePiglatinEnglishMapping(String piglatin, String english) {
-		ContentValues values = new ContentValues();
-		values.put("piglatin_word", piglatin);
-		values.put("english_word", english);
-		return this.getWritableDatabase().update("PIGLATIN_ENGLISH_MAPPING", values, "piglatin_word = ?", new String[]{piglatin});
-	}
-	
-	public String getEnglishWordForPigLatin(String piglatin) {
-		String englishWord = null;
-		String[] args = {piglatin};
-		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT english_word FROM PIGLATIN_ENGLISH_MAPPING WHERE piglatin_word = ?", args);
-		if (cursor != null) {
-			if (cursor.moveToFirst()) {
-				englishWord = cursor.getString(cursor.getColumnIndex("english_word"));
-			}
-			cursor.close();
-		}
-		return englishWord;
-	}
-	
-	public List<Translation> getUnsynchronizedTranslations() {
-		List<Translation> translations = new ArrayList<Translation>();
-		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT PL.text piglatin_text, EN.text english_text, translation_time "
-				+ "FROM TRANSLATION_HISTORY TH "
-				+ "JOIN ENGLISH_TEXT EN ON EN.id = TH.english_text_id "
-				+ "JOIN PIGLATIN_TEXT PL ON PL.id = TH.piglatin_text_id "
-				+ "WHERE TH.synchronized = 0 "
-				+ "ORDER BY translation_time DESC;", null);
-		
-		if (cursor != null) {
-			while(cursor.moveToNext()) {
-				Translation t = new Translation();
-				t.setEnglishText(cursor.getString(cursor.getColumnIndex("english_text")));
-				t.setPigLatinText(cursor.getString(cursor.getColumnIndex("piglatin_text")));
-				t.setTranslationTime(cursor.getString(cursor.getColumnIndex("translation_time")));
-				translations.add(t);
-			}
-			cursor.close();
-		}
-		return translations;
-	}
-	
-	
-	public Map<String,String> getUnsynchronizedPigLatinToEnglishMappings() {
-		Map<String, String> mappings = new HashMap<String, String>();
-		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT piglatin_word, english_word FROM PIGLATIN_ENGLISH_MAPPING WHERE synchronized = 0", null);
-		if (cursor != null) {
-			while (cursor.moveToNext()) {
-				mappings.put(cursor.getString(cursor.getColumnIndex("piglatin_word")), cursor.getString(cursor.getColumnIndex("english_word")));
-			}
-			cursor.close();
-		}
-		return mappings;	
-	}
-	
-	
-	public void markAllRecordsSynchronized() {
-		ContentValues values = new ContentValues();
-		values.put("synchronized", 1);
-		this.getWritableDatabase().update("PIGLATIN_ENGLISH_MAPPING", values, null, null);
-		this.getWritableDatabase().update("TRANSLATION_HISTORY", values, null, null);
-	}
-	
-	
-	public void resetDatabase() {
-		SQLiteDatabase db = this.getWritableDatabase();
-		executeSqlArray(db, SQL_DELETE_ENTRIES);
-		onCreate(db);
-	}
-	
-	*/
 	
 }
