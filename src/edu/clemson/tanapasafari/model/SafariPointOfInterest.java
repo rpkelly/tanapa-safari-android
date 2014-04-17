@@ -15,6 +15,7 @@ public class SafariPointOfInterest {
 	private int safariId;
 	private boolean inGeofence = false;
 	private Location location;
+	private String description;
 	
 	
 	public SafariPointOfInterest() {
@@ -64,6 +65,13 @@ public class SafariPointOfInterest {
 				e.printStackTrace();
 			}
 		}
+		if (jsonObject.has("description")){
+			try {
+				this.description = jsonObject.getString("description");
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	public int getId() {
@@ -101,6 +109,12 @@ public class SafariPointOfInterest {
 	}
 	public void setSafariId(int safariId) {
 		this.safariId = safariId;
+	}	
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String s){
+		this.description = s;
 	}
 	
 	public boolean isInGeofence() {

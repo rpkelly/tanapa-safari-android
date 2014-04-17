@@ -3,20 +3,12 @@ package edu.clemson.tanapasafari.service;
 import java.util.ArrayList;
 import java.util.List;
 
-<<<<<<< HEAD
-import edu.clemson.tanapasafari.GuideActivity;
-=======
->>>>>>> 3ab14aea41d2f864ee90954502d8ecea41138c67
 import edu.clemson.tanapasafari.constants.Constants;
-import edu.clemson.tanapasafari.db.TanapaDbHelper;
-import edu.clemson.tanapasafari.model.PointOfInterest;
 import android.app.AlertDialog;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -28,7 +20,7 @@ import android.util.Log;
 // Thanks to http://www.androidhive.info/2012/07/android-gps-location-manager-tutorial/
 
 public class GPSTracker extends Service implements LocationListener {
-	
+
 	private final Context mContext;
 	
 	private List<LocationListener> locationListeners = new ArrayList<LocationListener>();;
@@ -54,15 +46,9 @@ public class GPSTracker extends Service implements LocationListener {
 	// Declaring a Location Manager
 	protected LocationManager locationManager;
 	
-	
-	
-	private List<PointOfInterest> pois;
-	
 	public GPSTracker(Context context) {
 		this.mContext = context;
 		getLocation();
-		getPOIs();
-		addPOIs();
 	}
 	
 	public Location getLocation() {
@@ -77,7 +63,7 @@ public class GPSTracker extends Service implements LocationListener {
             // getting network status
             isNetworkEnabled = locationManager
                     .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
- 			*/s
+ 			*/
             if (!gpsEnabled) {
                 // no network provider is enabled
             } else {
@@ -105,33 +91,6 @@ public class GPSTracker extends Service implements LocationListener {
         return location;
     }
 	
-<<<<<<< HEAD
-	public void getPOIs(){
-		pois = new ArrayList<PointOfInterest>();
-		pois = TanapaDbHelper.getInstance(this).getPOIs();
-		Log.d("PointsOfInterest", pois.toString());		
-	}
-	
-	public void addPOIs(){
-		
-		// Create intent for each POI
-		for (int i = 0; i < pois.size(); i++){
-			PointOfInterest p = pois.get(i);
-			
-			Intent intent = new Intent(this, GuideActivity.class);
-			PendingIntent proximityIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
-			intent.putExtra("SafariId", p.getSafariId());
-			
-			locationManager.addProximityAlert(p.getLatitude(), p.getLongitude(), 
-					(float) p.getRadius(), (long) -1, proximityIntent);
-			
-			IntentFilter filter = new IntentFilter();
-			registerReceiver(new GeofenceIntentReceiver(), filter);
-		}
-		
-	}
-=======
->>>>>>> 3ab14aea41d2f864ee90954502d8ecea41138c67
 	
 	/**
      * Function to check if best network provider

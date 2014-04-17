@@ -12,7 +12,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 import edu.clemson.tanapasafari.constants.Constants;
-import edu.clemson.tanapasafari.model.PointOfInterest;
 import edu.clemson.tanapasafari.model.Report;
 import edu.clemson.tanapasafari.model.SafariPointOfInterest;
 import edu.clemson.tanapasafari.model.SafariWayPoint;
@@ -136,39 +135,6 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 		this.getWritableDatabase().update("REPORT", values, "id = ?", new String[]{Long.toString(reportId)});
 	}
 	
-
-	public void clearPOIs(){
-		this.getReadableDatabase().delete("SAFARI_POINTS_OF_INTEREST", null, null);
-	}
-	
-	public void savePOI(PointOfInterest p){
-		ContentValues poiContentValues = new ContentValues();
-		poiContentValues.put("name", p.getName());
-		poiContentValues.put("safari_id", p.getSafariId());
-		poiContentValues.put("latitude", p.getLatitude());
-		poiContentValues.put("longitude", p.getLongitude());
-		poiContentValues.put("radius", p.getRadius());
-	}
-	
-	public List<PointOfInterest> getPOIs(){
-		List<PointOfInterest> pois = new ArrayList<PointOfInterest>();
-		// Assuming only POIs are for current safari 
-		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT * FROM SAFARI_POINTS_OF_INTEREST ", null);
-		if (cursor != null) {
-			while (cursor.moveToNext()){
-				PointOfInterest poi = new PointOfInterest(cursor.getInt(cursor.getColumnIndex("id")),
-						cursor.getString(cursor.getColumnIndex("name")),
-						cursor.getInt(cursor.getColumnIndex("safari_id")),
-						cursor.getDouble(cursor.getColumnIndex("latitude")),
-						cursor.getDouble(cursor.getColumnIndex("longitude")),
-						cursor.getDouble(cursor.getColumnIndex("radius")));
-				pois.add(poi);
-			}
-			cursor.close();
-		}
-		return pois;
-	}
-	
 	public void clearWayPoints(){
 		this.getWritableDatabase().delete("SAFARI_WAYPOINTS", null, null);
 	}
@@ -203,28 +169,6 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 		}
 		return waypoints;
 	}
-<<<<<<< HEAD
-	
-	/*
-	public long saveTranslation(Translation t) {
-		ContentValues pigLatinTextValues = new ContentValues();
-		pigLatinTextValues.put("text", t.getPigLatinText());
-		long pigLatinTextId = this.getWritableDatabase().insert("PIGLATIN_TEXT", "text", pigLatinTextValues);
-		
-		ContentValues englishTextValues = new ContentValues();
-		englishTextValues.put("text", t.getEnglishText());
-		long englishTextId = this.getWritableDatabase().insert("ENGLISH_TEXT", "text", englishTextValues);
-		
-		ContentValues translationHistoryValues = new ContentValues();
-		translationHistoryValues.put("english_text_id", englishTextId);
-		translationHistoryValues.put("piglatin_text_id", pigLatinTextId);
-		long translationHistoryId = this.getWritableDatabase().insert("TRANSLATION_HISTORY", "translation_time", translationHistoryValues);
-		
-		return translationHistoryId;
-	}
-	
-=======
->>>>>>> 3ab14aea41d2f864ee90954502d8ecea41138c67
 	
 	public void saveSafariPointOfInterest(SafariPointOfInterest poi) {
 		ContentValues poiContentValues = new ContentValues();

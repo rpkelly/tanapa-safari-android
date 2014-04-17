@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
@@ -11,7 +13,10 @@ import android.location.LocationListener;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -103,17 +108,46 @@ public class GuideActivity extends Activity {
 			}
     	});
         
-	}
-        	
-        	
-	
+	}	
 	
 	private void checkPointsOfInterest(Location l) {
 		for ( SafariPointOfInterest poi : safariPointsOfInterest) {
 			if (l.distanceTo(poi.getLocation()) < poi.getRadius()) {
 				if (!poi.isInGeofence()) {
 					poi.setInGeofence(true);
-					showToastText("Entered POI Geofence: " + poi.getName());
+					TextView title, text;
+					
+					LayoutInflater li = LayoutInflater.from(this);
+					AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+					View poiView = li.inflate(R.layout.activity_poi, null);
+					
+					alertDialogBuilder.setView(poiView);
+					title = (TextView) poiView.findViewById(R.id.poiTitle);
+					text = (TextView) poiView.findViewById(R.id.poiText);
+					title.setText(poi.getName());
+					text.setText(poi.getDescription());
+					
+					// Create Dialog box for user input 
+					alertDialogBuilder
+					.setCancelable(false)
+					.setPositiveButton("OK",
+					  new DialogInterface.OnClickListener() {
+					    @Override
+						public void onClick(DialogInterface dialog,int id) {
+						dialog.dismiss();
+					    }
+					  })
+					.setNegativeButton("Cancel",
+					  new DialogInterface.OnClickListener() {
+					    @Override
+						public void onClick(DialogInterface dialog,int id) {
+						dialog.cancel();
+					    }
+					  });
+
+				AlertDialog alertDialog = alertDialogBuilder.create();
+				alertDialog.show();
+
 				}
 			} else {
 				if (poi.isInGeofence()) {
