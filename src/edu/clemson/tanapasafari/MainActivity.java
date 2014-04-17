@@ -104,6 +104,34 @@ public class MainActivity extends Activity {
 			
 		});
 		
+		boolean isUser = false;
+		Log.d("Hello", "Right before hasUser call");
+		isUser = TanapaDbHelper.getInstance(getBaseContext()).hasUser();
+		Log.d("", "Right after hasUser call");
+		if(!isUser){
+			WebServiceClientHelper.doGet(getString(R.string.base_url) + "/user.php", new ResponseHandler(){
+				
+				@Override
+				public void onResponse(Response r) {
+					try {
+						JSONObject jsonResponse = new JSONObject(r.getData());
+						Log.d(Constants.LOGGING_TAG, jsonResponse.toString());
+						JSONArray jsonUser  = jsonResponse.getJSONArray("results");
+						for (int i = 0; i < jsonUser.length(); i++) {
+							JSONObject currentObject = (JSONObject) jsonUser.get(i);
+							if(currentObject.has("id")){
+								TanapaDbHelper.getInstance(getBaseContext()).addUser(currentObject.getInt("id"));
+							}
+						}
+					} catch (JSONException e) {
+						
+						e.printStackTrace();
+					}
+				}
+				
+			});
+		}
+		
 	}
 
 	@Override

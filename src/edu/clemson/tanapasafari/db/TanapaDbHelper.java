@@ -5,6 +5,10 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -15,20 +19,23 @@ import edu.clemson.tanapasafari.constants.Constants;
 import edu.clemson.tanapasafari.model.Report;
 import edu.clemson.tanapasafari.model.SafariPointOfInterest;
 import edu.clemson.tanapasafari.model.SafariWayPoint;
+import edu.clemson.tanapasafari.model.UserLog;
 
 public class TanapaDbHelper extends SQLiteOpenHelper {
 
-	public static final int DATABASE_VERSION = 7;
+	public static final int DATABASE_VERSION = 8;
 	public static final String DATABASE_NAME = "tanapa.db";
 	
 	
-	private static final String[] SQL_CREATE_ENTRIES = {"CREATE TABLE USER_LOG (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)",
+	private static final String[] SQL_CREATE_ENTRIES = {
 		"CREATE TABLE MEDIA ( id INTEGER PRIMARY KEY, type VARCHAR(20) NOT NULL, url VARCHAR(255) NOT NULL)",
 		"CREATE TABLE REPORT_TYPE (id INTEGER PRIMARY KEY, name	VARCHAR(80) NOT NULL)",
 		"CREATE TABLE REPORT ( id INTEGER PRIMARY KEY, report_type_id INTEGER NOT NULL, content	TEXT, time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, latitude DECIMAL, longitude DECIMAL, user_id INTEGER NOT NULL, report_media_id INTEGER, synchronized INTEGER DEFAULT(0))",
 		"CREATE TABLE SAFARI ( id INTEGER PRIMARY KEY, name	VARCHAR(80) NOT NULL, description TEXT, header_media_id INTEGER, footer_media_id INTEGER, tile_media_id	INTEGER)",
 		"CREATE TABLE SAFARI_WAYPOINTS (id INTEGER PRIMARY KEY, sequence INTEGER NOT NULL, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, safari_id INTEGER NOT NULL)",
-		"CREATE TABLE SAFARI_POINTS_OF_INTEREST ( id INTEGER PRIMARY KEY, name VARCHAR(80) NOT NULL, safari_id INTEGER NOT NULL, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, radius INTEGER NOT NULL)"
+		"CREATE TABLE SAFARI_POINTS_OF_INTEREST ( id INTEGER PRIMARY KEY, name VARCHAR(80) NOT NULL, safari_id INTEGER NOT NULL, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, radius INTEGER NOT NULL)",
+		"CREATE TABLE USER ( id INTEGER PRIMARY KEY, user_id INTEGER)",
+		"CREATE TABLE USER_LOG (id INTEGER PRIMARY KEY, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, loaded INTEGER NOT NULL DEFAULT 0)"
 	};
 	
 	private static final String[] SQL_DELETE_ENTRIES = {"DROP TABLE IF EXISTS SAFARI_POINTS_OF_INTEREST",
@@ -38,7 +45,9 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 		"DROP TABLE IF EXISTS USER_LOG",
 		"DROP TABLE IF EXISTS USER",
 		"DROP TABLE IF EXISTS SAFARI",
-		"DROP TABLE IF EXISTS MEDIA"
+		"DROP TABLE IF EXISTS MEDIA",
+		"DROP TABLE IF EXISTS USER",
+		"DROP TABLE IF EXISTS USER_LOG"
 	};
 	
 	private static TanapaDbHelper instance;
@@ -203,5 +212,73 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 		}
 		return results;
 	}
+
+	public boolean hasUser(){
+		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT * FROM USER", null);
+		if(cursor != null){
+			return true;
+		}
+		else
+			return false;
+	}
 	
+	public void addUser(int uId){
+		ContentValues userContentValues = new ContentValues();
+		userContentValues.put("user_id", uId);
+		this.getWritableDatabase().insert("USER", null, userContentValues);
+
+	}
+	
+	public int getUser(){
+		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT user_id FROM user", null);
+		int userID = -1;
+		if(hasUser()){
+			while(cursor.moveToNext()){
+				userID = cursor.getInt(cursor.getColumnIndex("user_id"));
+			}
+		}
+		return userID;
+	}
+	
+	public void saveLocation(UserLog log){
+		ContentValues locContentValues = new ContentValues();
+		locContentValues.put("latitude", log.getLatitude());
+		locContentValues.put("longitude", log.getLongitude());
+		this.getWritableDatabase().insert("USER_LOG", null, locContentValues);
+
+	}
+
+	public String getUnPostedLogs(){
+		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT longitude,  latitude, time FROM user_log WHERE loaded = 0", null);
+		JSONObject logs = new JSONObject();
+		JSONObject log;
+		JSONArray arr = new JSONArray();
+		int user = getUser();
+		if (cursor != null) {
+			while (cursor.moveToNext()) {
+				log = new JSONObject();
+				try {
+					log.put("longitude", cursor.getDouble(cursor.getColumnIndex("longitude")));
+					log.put("latitude", cursor.getDouble(cursor.getColumnIndex("latitude")));
+					log.put("time", cursor.getLong(cursor.getColumnIndex("time")));
+					log.put("user_id", user);
+					arr.put(log);				
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+			}
+			}
+			try{
+				logs.put("logs", arr);
+			} catch(JSONException e){
+				e.printStackTrace();
+			}
+			cursor.close();
+		}
+		return logs.toString();
+	}
+	
+	public void markPosted(){
+		this.getReadableDatabase().rawQuery("UPDATE user_log SET loaded = 1 WHERE loaded = 0", null);
+	}
 }
