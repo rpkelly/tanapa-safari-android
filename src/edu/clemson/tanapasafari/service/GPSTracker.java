@@ -86,22 +86,6 @@ public class GPSTracker extends Service implements LocationListener {
                                     .getLastKnownLocation(LocationManager.GPS_PROVIDER);
                         }
                     }
-                
-                    //Record location
-                    final UserLog log = new UserLog();
-					log.setTime(new Date());
-					log.setLatitude(location.getLatitude());
-                    log.setLongitude(location.getLongitude());
-                    
-                    User.getId(mContext, new UserIdListener(){
-
-						@Override
-						public void onUserId(Integer id) {
-							log.setUserId(id);
-							TanapaDbHelper.getInstance(getBaseContext()).saveLocation(log);
-						}
-                    	
-                    });
                 }
             }
  
@@ -180,6 +164,21 @@ public class GPSTracker extends Service implements LocationListener {
 	@Override
 	public void onLocationChanged(Location location) {
 		Log.d(Constants.LOGGING_TAG, "Location updated in GPSTracker: " + location.toString());
+		 //Record location
+        final UserLog log = new UserLog();
+		log.setTime(new Date());
+		log.setLatitude(location.getLatitude());
+        log.setLongitude(location.getLongitude());
+        
+        User.getId(mContext, new UserIdListener(){
+
+			@Override
+			public void onUserId(Integer id) {
+				log.setUserId(id);
+				TanapaDbHelper.getInstance(getBaseContext()).saveLocation(log);
+			}
+        	
+        });
 		for ( LocationListener l : locationListeners ) {
 			l.onLocationChanged(location);
 		}
