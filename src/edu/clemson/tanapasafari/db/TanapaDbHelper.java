@@ -23,7 +23,7 @@ import edu.clemson.tanapasafari.model.UserLog;
 
 public class TanapaDbHelper extends SQLiteOpenHelper {
 
-	public static final int DATABASE_VERSION = 8;
+	public static final int DATABASE_VERSION = 9;
 	public static final String DATABASE_NAME = "tanapa.db";
 	
 	
@@ -34,8 +34,7 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 		"CREATE TABLE SAFARI ( id INTEGER PRIMARY KEY, name	VARCHAR(80) NOT NULL, description TEXT, header_media_id INTEGER, footer_media_id INTEGER, tile_media_id	INTEGER)",
 		"CREATE TABLE SAFARI_WAYPOINTS (id INTEGER PRIMARY KEY, sequence INTEGER NOT NULL, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, safari_id INTEGER NOT NULL)",
 		"CREATE TABLE SAFARI_POINTS_OF_INTEREST ( id INTEGER PRIMARY KEY, name VARCHAR(80) NOT NULL, safari_id INTEGER NOT NULL, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, radius INTEGER NOT NULL)",
-		"CREATE TABLE USER ( id INTEGER PRIMARY KEY, user_id INTEGER)",
-		"CREATE TABLE USER_LOG (id INTEGER PRIMARY KEY, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, loaded INTEGER NOT NULL DEFAULT 0)"
+		"CREATE TABLE USER_LOG (id INTEGER PRIMARY KEY, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, user_id INTEGER NOT NULL, synchronized INTEGER NOT NULL DEFAULT 0)"
 	};
 	
 	private static final String[] SQL_DELETE_ENTRIES = {"DROP TABLE IF EXISTS SAFARI_POINTS_OF_INTEREST",
@@ -144,10 +143,6 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 		this.getWritableDatabase().update("REPORT", values, "id = ?", new String[]{Long.toString(reportId)});
 	}
 	
-	public void clearPOIs(){
-		this.getReadableDatabase().delete("SAFARI_POINTS_OF_INTEREST", null, null);
-	}
-	
 	public void clearWayPoints(){
 		this.getWritableDatabase().delete("SAFARI_WAYPOINTS", null, null);
 	}
@@ -213,72 +208,43 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 		return results;
 	}
 
-	public boolean hasUser(){
-		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT * FROM USER", null);
-		if(cursor != null){
-			return true;
-		}
-		else
-			return false;
-	}
-	
-	public void addUser(int uId){
-		ContentValues userContentValues = new ContentValues();
-		userContentValues.put("user_id", uId);
-		this.getWritableDatabase().insert("USER", null, userContentValues);
-
-	}
-	
-	public int getUser(){
-		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT user_id FROM user", null);
-		int userID = -1;
-		if(hasUser()){
-			while(cursor.moveToNext()){
-				userID = cursor.getInt(cursor.getColumnIndex("user_id"));
-			}
-		}
-		return userID;
-	}
-	
 	public void saveLocation(UserLog log){
 		ContentValues locContentValues = new ContentValues();
+		locContentValues.put("time", Constants.ISO_8601_DATE_FORMAT.format(log.getTime()));
 		locContentValues.put("latitude", log.getLatitude());
 		locContentValues.put("longitude", log.getLongitude());
+		locContentValues.put("user_id", log.getUserId());
 		this.getWritableDatabase().insert("USER_LOG", null, locContentValues);
 
 	}
 
-	public String getUnPostedLogs(){
-		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT longitude,  latitude, time FROM user_log WHERE loaded = 0", null);
-		JSONObject logs = new JSONObject();
-		JSONObject log;
-		JSONArray arr = new JSONArray();
-		int user = getUser();
-		if (cursor != null) {
+	
+	public List<UserLog> findUnsynchronizedLUserLogs(){
+		List<UserLog> userLogs = new ArrayList<UserLog>();
+		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT id, longitude, latitude, time, user_id, synchronized FROM user_log WHERE synchronized = 0", null);
+		if ( cursor != null ) {
 			while (cursor.moveToNext()) {
-				log = new JSONObject();
+				UserLog userLog = new UserLog();
+				userLog.setId(cursor.getInt(cursor.getColumnIndex("id")));
+				userLog.setLatitude(cursor.getDouble(cursor.getColumnIndex("latitude")));
+				userLog.setLongitude(cursor.getDouble(cursor.getColumnIndex("longitude")));
 				try {
-					log.put("longitude", cursor.getDouble(cursor.getColumnIndex("longitude")));
-					log.put("latitude", cursor.getDouble(cursor.getColumnIndex("latitude")));
-					log.put("time", cursor.getLong(cursor.getColumnIndex("time")));
-					log.put("user_id", user);
-					arr.put(log);				
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-			}
-			}
-			try{
-				logs.put("logs", arr);
-			} catch(JSONException e){
-				e.printStackTrace();
+					userLog.setTime(Constants.ISO_8601_DATE_FORMAT.parse(cursor.getString(cursor.getColumnIndex("time"))));
+				} catch (ParseException e) {
+					Log.e(Constants.LOGGING_TAG, "Failed converting date from database to Date class", e);
+				}
+				userLog.setUserId(cursor.getInt(cursor.getColumnIndex("user_id")));
+				userLogs.add(userLog);
 			}
 			cursor.close();
 		}
-		return logs.toString();
+		return userLogs;
 	}
 	
-	public void markPosted(){
-		this.getReadableDatabase().rawQuery("UPDATE user_log SET loaded = 1 WHERE loaded = 0", null);
+	
+	public void markUserLogAsSynchronized(long userLogId){
+		ContentValues values = new ContentValues();
+		values.put("synchronized", 1);
+		this.getWritableDatabase().update("USER_LOG", values, "id = ?", new String[]{Long.toString(userLogId)});
 	}
 }

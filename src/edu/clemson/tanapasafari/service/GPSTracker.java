@@ -1,11 +1,14 @@
 package edu.clemson.tanapasafari.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import edu.clemson.tanapasafari.R;
 import edu.clemson.tanapasafari.constants.Constants;
 import edu.clemson.tanapasafari.db.TanapaDbHelper;
+import edu.clemson.tanapasafari.model.User;
+import edu.clemson.tanapasafari.model.UserIdListener;
 import edu.clemson.tanapasafari.model.UserLog;
 import edu.clemson.tanapasafari.webservice.Response;
 import edu.clemson.tanapasafari.webservice.ResponseHandler;
@@ -65,11 +68,7 @@ public class GPSTracker extends Service implements LocationListener {
             // getting GPS status
             gpsEnabled = locationManager
                     .isProviderEnabled(LocationManager.GPS_PROVIDER);
-            /*
-            // getting network status
-            isNetworkEnabled = locationManager
-                    .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
- 			*/
+            
             if (!gpsEnabled) {
                 // no network provider is enabled
             } else {
@@ -88,21 +87,21 @@ public class GPSTracker extends Service implements LocationListener {
                         }
                     }
                 
-                //Record location
-                    UserLog log = new UserLog();
-                    log.setLatitude(location.getLatitude());
+                    //Record location
+                    final UserLog log = new UserLog();
+					log.setTime(new Date());
+					log.setLatitude(location.getLatitude());
                     log.setLongitude(location.getLongitude());
-					TanapaDbHelper.getInstance(getBaseContext()).saveLocation(log);
-					
-	/*				String toSend = TanapaDbHelper.getInstance(getBaseContext()).getUnPostedLogs();
-					
-					WebServiceClientHelper.doPost(getString(R.string.base_url) + "/locationdata.php", toSend, new ResponseHandler(){
+                    
+                    User.getId(mContext, new UserIdListener(){
+
 						@Override
-						public void onResponse(Response r) {
-							TanapaDbHelper.getInstance(getBaseContext()).markPosted();
+						public void onUserId(Integer id) {
+							log.setUserId(id);
+							TanapaDbHelper.getInstance(getBaseContext()).saveLocation(log);
 						}
-					});
-*/
+                    	
+                    });
                 }
             }
  
