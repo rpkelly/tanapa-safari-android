@@ -15,20 +15,22 @@ import edu.clemson.tanapasafari.constants.Constants;
 import edu.clemson.tanapasafari.model.Report;
 import edu.clemson.tanapasafari.model.SafariPointOfInterest;
 import edu.clemson.tanapasafari.model.SafariWayPoint;
+import edu.clemson.tanapasafari.model.UserLog;
 
 public class TanapaDbHelper extends SQLiteOpenHelper {
 
-	public static final int DATABASE_VERSION = 7;
+	public static final int DATABASE_VERSION = 9;
 	public static final String DATABASE_NAME = "tanapa.db";
 	
 	
-	private static final String[] SQL_CREATE_ENTRIES = {"CREATE TABLE USER_LOG (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)",
+	private static final String[] SQL_CREATE_ENTRIES = {
 		"CREATE TABLE MEDIA ( id INTEGER PRIMARY KEY, type VARCHAR(20) NOT NULL, url VARCHAR(255) NOT NULL)",
 		"CREATE TABLE REPORT_TYPE (id INTEGER PRIMARY KEY, name	VARCHAR(80) NOT NULL)",
 		"CREATE TABLE REPORT ( id INTEGER PRIMARY KEY, report_type_id INTEGER NOT NULL, content	TEXT, time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, latitude DECIMAL, longitude DECIMAL, user_id INTEGER NOT NULL, report_media_id INTEGER, synchronized INTEGER DEFAULT(0))",
 		"CREATE TABLE SAFARI ( id INTEGER PRIMARY KEY, name	VARCHAR(80) NOT NULL, description TEXT, header_media_id INTEGER, footer_media_id INTEGER, tile_media_id	INTEGER)",
 		"CREATE TABLE SAFARI_WAYPOINTS (id INTEGER PRIMARY KEY, sequence INTEGER NOT NULL, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, safari_id INTEGER NOT NULL)",
-		"CREATE TABLE SAFARI_POINTS_OF_INTEREST ( id INTEGER PRIMARY KEY, name VARCHAR(80) NOT NULL, safari_id INTEGER NOT NULL, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, radius INTEGER NOT NULL)"
+		"CREATE TABLE SAFARI_POINTS_OF_INTEREST ( id INTEGER PRIMARY KEY, name VARCHAR(80) NOT NULL, safari_id INTEGER NOT NULL, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, radius INTEGER NOT NULL)",
+		"CREATE TABLE USER_LOG (id INTEGER PRIMARY KEY, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, user_id INTEGER NOT NULL, synchronized INTEGER NOT NULL DEFAULT 0)"
 	};
 	
 	private static final String[] SQL_DELETE_ENTRIES = {"DROP TABLE IF EXISTS SAFARI_POINTS_OF_INTEREST",
@@ -38,7 +40,9 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 		"DROP TABLE IF EXISTS USER_LOG",
 		"DROP TABLE IF EXISTS USER",
 		"DROP TABLE IF EXISTS SAFARI",
-		"DROP TABLE IF EXISTS MEDIA"
+		"DROP TABLE IF EXISTS MEDIA",
+		"DROP TABLE IF EXISTS USER",
+		"DROP TABLE IF EXISTS USER_LOG"
 	};
 	
 	private static TanapaDbHelper instance;
@@ -199,5 +203,44 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 		}
 		return results;
 	}
+
+	public void saveLocation(UserLog log){
+		ContentValues locContentValues = new ContentValues();
+		locContentValues.put("time", Constants.ISO_8601_DATE_FORMAT.format(log.getTime()));
+		locContentValues.put("latitude", log.getLatitude());
+		locContentValues.put("longitude", log.getLongitude());
+		locContentValues.put("user_id", log.getUserId());
+		this.getWritableDatabase().insert("USER_LOG", null, locContentValues);
+
+	}
+
 	
+	public List<UserLog> findUnsynchronizedLUserLogs(){
+		List<UserLog> userLogs = new ArrayList<UserLog>();
+		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT id, longitude, latitude, time, user_id, synchronized FROM user_log WHERE synchronized = 0", null);
+		if ( cursor != null ) {
+			while (cursor.moveToNext()) {
+				UserLog userLog = new UserLog();
+				userLog.setId(cursor.getInt(cursor.getColumnIndex("id")));
+				userLog.setLatitude(cursor.getDouble(cursor.getColumnIndex("latitude")));
+				userLog.setLongitude(cursor.getDouble(cursor.getColumnIndex("longitude")));
+				try {
+					userLog.setTime(Constants.ISO_8601_DATE_FORMAT.parse(cursor.getString(cursor.getColumnIndex("time"))));
+				} catch (ParseException e) {
+					Log.e(Constants.LOGGING_TAG, "Failed converting date from database to Date class", e);
+				}
+				userLog.setUserId(cursor.getInt(cursor.getColumnIndex("user_id")));
+				userLogs.add(userLog);
+			}
+			cursor.close();
+		}
+		return userLogs;
+	}
+	
+	
+	public void markUserLogAsSynchronized(long userLogId){
+		ContentValues values = new ContentValues();
+		values.put("synchronized", 1);
+		this.getWritableDatabase().update("USER_LOG", values, "id = ?", new String[]{Long.toString(userLogId)});
+	}
 }

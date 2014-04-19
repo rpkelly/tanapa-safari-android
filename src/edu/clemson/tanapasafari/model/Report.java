@@ -109,7 +109,7 @@ public class Report {
 			}
 			reportJson.put("synch", this.synch);
 		} catch (JSONException e) {
-			Log.e(Constants.LOGGING_TAG, "Error occurred while serializing User object to JSON.", e);
+			Log.e(Constants.LOGGING_TAG, "Error occurred while serializing Report object to JSON.", e);
 		}
 		
 		return reportJson;
