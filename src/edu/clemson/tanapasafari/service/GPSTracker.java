@@ -4,15 +4,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import edu.clemson.tanapasafari.R;
-import edu.clemson.tanapasafari.constants.Constants;
-import edu.clemson.tanapasafari.db.TanapaDbHelper;
-import edu.clemson.tanapasafari.model.User;
-import edu.clemson.tanapasafari.model.UserIdListener;
-import edu.clemson.tanapasafari.model.UserLog;
-import edu.clemson.tanapasafari.webservice.Response;
-import edu.clemson.tanapasafari.webservice.ResponseHandler;
-import edu.clemson.tanapasafari.webservice.WebServiceClientHelper;
 import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
@@ -25,6 +16,11 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
+import edu.clemson.tanapasafari.constants.Constants;
+import edu.clemson.tanapasafari.db.TanapaDbHelper;
+import edu.clemson.tanapasafari.model.User;
+import edu.clemson.tanapasafari.model.UserIdListener;
+import edu.clemson.tanapasafari.model.UserLog;
 
 // Thanks to http://www.androidhive.info/2012/07/android-gps-location-manager-tutorial/
 
@@ -47,10 +43,10 @@ public class GPSTracker extends Service implements LocationListener {
 	double longitude; // longitude
 	
 	// The minimum distance to change Updates in meters
-	private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 5; // 5 meters
+	private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10; // 10 meters
 	
 	// The minimum time between updates in milliseconds
-	private static final long MIN_TIME_BW_UPDATES = 1000; // 1 second
+	private static final long MIN_TIME_BW_UPDATES = 1000; // 15 second
 	
 	// Declaring a Location Manager
 	protected LocationManager locationManager;
@@ -86,22 +82,6 @@ public class GPSTracker extends Service implements LocationListener {
                                     .getLastKnownLocation(LocationManager.GPS_PROVIDER);
                         }
                     }
-                
-                    //Record location
-                    final UserLog log = new UserLog();
-					log.setTime(new Date());
-					log.setLatitude(location.getLatitude());
-                    log.setLongitude(location.getLongitude());
-                    
-                    User.getId(mContext, new UserIdListener(){
-
-						@Override
-						public void onUserId(Integer id) {
-							log.setUserId(id);
-							TanapaDbHelper.getInstance(getBaseContext()).saveLocation(log);
-						}
-                    	
-                    });
                 }
             }
  
@@ -180,6 +160,21 @@ public class GPSTracker extends Service implements LocationListener {
 	@Override
 	public void onLocationChanged(Location location) {
 		Log.d(Constants.LOGGING_TAG, "Location updated in GPSTracker: " + location.toString());
+		 //Record location
+        final UserLog log = new UserLog();
+		log.setTime(new Date());
+		log.setLatitude(location.getLatitude());
+        log.setLongitude(location.getLongitude());
+        
+        User.getId(mContext, new UserIdListener(){
+
+			@Override
+			public void onUserId(Integer id) {
+				log.setUserId(id);
+				TanapaDbHelper.getInstance(getBaseContext()).saveLocation(log);
+			}
+        	
+        });
 		for ( LocationListener l : locationListeners ) {
 			l.onLocationChanged(location);
 		}
