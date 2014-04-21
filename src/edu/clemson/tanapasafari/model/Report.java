@@ -105,7 +105,7 @@ public class Report {
 			reportJson.put("longitude", this.getLongitude());
 			reportJson.put("user_id", this.getUserId());
 			if (this.media != null) {
-				//reportJson.put("media", media.toJSON());
+				reportJson.put("media", media.toJSON());
 			}
 			reportJson.put("synch", this.synch);
 		} catch (JSONException e) {

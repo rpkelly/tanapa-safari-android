@@ -12,6 +12,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 import edu.clemson.tanapasafari.constants.Constants;
+import edu.clemson.tanapasafari.model.Media;
 import edu.clemson.tanapasafari.model.Report;
 import edu.clemson.tanapasafari.model.SafariPointOfInterest;
 import edu.clemson.tanapasafari.model.SafariWayPoint;
@@ -19,12 +20,12 @@ import edu.clemson.tanapasafari.model.UserLog;
 
 public class TanapaDbHelper extends SQLiteOpenHelper {
 
-	public static final int DATABASE_VERSION = 9;
+	public static final int DATABASE_VERSION = 14;
 	public static final String DATABASE_NAME = "tanapa.db";
 	
 	
 	private static final String[] SQL_CREATE_ENTRIES = {
-		"CREATE TABLE MEDIA ( id INTEGER PRIMARY KEY, type VARCHAR(20) NOT NULL, url VARCHAR(255) NOT NULL)",
+		"CREATE TABLE MEDIA ( id INTEGER PRIMARY KEY, type VARCHAR(20), url VARCHAR(255) NOT NULL)",
 		"CREATE TABLE REPORT_TYPE (id INTEGER PRIMARY KEY, name	VARCHAR(80) NOT NULL)",
 		"CREATE TABLE REPORT ( id INTEGER PRIMARY KEY, report_type_id INTEGER NOT NULL, content	TEXT, time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, latitude DECIMAL, longitude DECIMAL, user_id INTEGER NOT NULL, report_media_id INTEGER, synchronized INTEGER DEFAULT(0))",
 		"CREATE TABLE SAFARI ( id INTEGER PRIMARY KEY, name	VARCHAR(80) NOT NULL, description TEXT, header_media_id INTEGER, footer_media_id INTEGER, tile_media_id	INTEGER)",
@@ -125,6 +126,13 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 				report.setLatitude(cursor.getDouble(cursor.getColumnIndex("latitude")));
 				report.setLongitude(cursor.getDouble(cursor.getColumnIndex("longitude")));
 				report.setUserId(cursor.getLong(cursor.getColumnIndex("user_id")));
+				if (!cursor.isNull(cursor.getColumnIndex("report_media_id"))) {
+					Media media = new Media();
+					media.setId(cursor.getLong(cursor.getColumnIndex("report_media_id")));
+					media.setType(cursor.getString(cursor.getColumnIndex("report_media_type")));
+					media.setUrl(cursor.getString(cursor.getColumnIndex("report_media_url")));
+					report.setMedia(media);
+				}
 				reports.add(report);
 			}
 			cursor.close();

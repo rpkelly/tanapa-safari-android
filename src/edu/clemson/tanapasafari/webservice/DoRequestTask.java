@@ -1,16 +1,20 @@
 package edu.clemson.tanapasafari.webservice;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Map;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.FileEntityHC4;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 
 import android.os.AsyncTask;
 
@@ -30,53 +34,70 @@ class DoRequestTask extends AsyncTask<Map<String, Object>, Void, Response> {
 	}
 	
 	private static Response doRequest(Map<String, Object> params) {
-		InputStream is = null;
+		//InputStream is = null;
 		try {
-			URL u = new URL((String)params.get("url"));
-			HttpURLConnection conn = (HttpURLConnection) u.openConnection();
-			conn.setReadTimeout(10000);
-			conn.setConnectTimeout(15000);
-			conn.setRequestMethod((String)params.get("method"));
-			conn.setDoInput(true);
-			if ((String)params.get("method") == "POST") {
-				conn.setDoOutput(true);
-				OutputStream os = conn.getOutputStream();
-				BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-				writer.write((String)params.get("data"));
-				writer.flush();
-				writer.close();
-				os.close();
+			HttpClient client = HttpClientBuilder.create().build();
+			HttpUriRequest request = null;
+			if ("POST".equals(params.get("method"))) {
+				HttpPost post = new HttpPost((String)params.get("url"));
+				/*
+				// If the data param is a map, it is multipart.
+				if (params.get("data") instanceof Map){
+					
+					@SuppressWarnings("unchecked")
+					Map<String, Object> data = (Map<String, Object>) params.get("data");
+					
+					MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
+					entityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+					
+					for (String key : data.keySet()) {
+						Object value = data.get(key);
+						if ( value instanceof String ) {
+							entityBuilder.addTextBody(key, (String) value);
+							entityBuilder.
+						} else if (value instanceof File){
+							entityBuilder.addBinaryBody(key, (File)value);
+						}
+					}
+					
+					
+					post.setEntity(entityBuilder.build());
+		            
+				} else if (params.get("data") instanceof String){
+					post.setEntity(new StringEntity((String)params.get("data")));
+				}
+				*/
+				
+				Object data = params.get("data");
+				
+				if (data instanceof String) {
+					post.setEntity(new StringEntity((String)params.get("data")));
+				} else if (data instanceof File) {
+					String mimeTypeString = (String) params.get("mimeType");
+					ContentType mimeTypeContentType = ContentType.create(mimeTypeString);
+					File dataFile = (File) data;
+					FileEntityHC4 entity = new FileEntityHC4(dataFile, mimeTypeContentType);
+					post.setEntity(entity);
+				}
+				
+				request = post;
+			} else if ("GET".equals(params.get("method"))) {
+				HttpGet get = new HttpGet((String)params.get("url"));
+				request = get;
 			}
-			conn.connect();
-			Response r = new Response();
-			r.setResponseCode(conn.getResponseCode());
-			is = conn.getInputStream();
 			
-			BufferedReader br = new BufferedReader(new InputStreamReader(is));;
-			StringBuilder sb = new StringBuilder();
-			String line;
+			HttpResponse httpResponse = client.execute(request);
+			Response response = new Response();
+			response.setResponseCode(httpResponse.getStatusLine().getStatusCode());
+			response.setData(EntityUtils.toString(httpResponse.getEntity()));
+			return response;
 			
-			while ((line = br.readLine()) != null ) {
-				sb.append(line);
-			}
-			
-			r.setData(sb.toString());
-			return r;
-			
-		} catch (MalformedURLException e) {
+		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			if (is != null) {
-				try {
-					is.close();
-				} catch (IOException ioe) {
-					ioe.printStackTrace();
-				}
-			}
 		}
 		return null;
 	}

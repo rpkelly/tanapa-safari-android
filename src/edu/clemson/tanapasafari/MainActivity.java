@@ -13,8 +13,6 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -52,17 +50,18 @@ public class MainActivity extends Activity {
 		
 	};
 	
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.activity_main);
-				
-		SharedPreferences prefs = getSharedPreferences("userpreferences", Context.MODE_PRIVATE);
-		Editor editor = prefs.edit(); 
-		editor.clear();
-		editor.commit();
+		
+		/*
+		 * SharedPreferences prefs = getSharedPreferences("userpreferences", Context.MODE_PRIVATE);
+		 * Editor editor = prefs.edit(); 
+		 * editor.clear();
+		 * editor.commit();
+		 */
 		
 		// Go ahead and initialize the internal database.
 		TanapaDbHelper.getInstance(this);
