@@ -16,11 +16,9 @@
         	android:id="@+id/main_headerImageView"
         	android:layout_width="wrap_content"
         	android:layout_height="wrap_content"
-        	android:src="@drawable/main_header" />
+        	android:src="@drawable/main_header" 
+        	android:contentDescription="@string/header_image" />
     	    
     </LinearLayout>
-
-
-    
 
 </ScrollView>

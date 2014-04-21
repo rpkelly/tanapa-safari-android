@@ -1,10 +1,5 @@
 package edu.clemson.tanapasafari;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import edu.clemson.tanapasafari.db.TanapaDbHelper;
-import edu.clemson.tanapasafari.model.SafariPointOfInterest;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;

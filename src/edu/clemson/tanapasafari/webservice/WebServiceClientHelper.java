@@ -15,12 +15,13 @@ public class WebServiceClientHelper {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static void doPost(String url, String data, ResponseHandler responseHandler) {
+	public static void doPost(String url, Object data, String mimeType, ResponseHandler responseHandler) {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("url", url);
 		params.put("method", "POST");
 		params.put("responseHandler", responseHandler);
 		params.put("data", data);
+		params.put("mimeType", mimeType);
 		new DoRequestTask().execute(params);
 	}	
 
