@@ -28,6 +28,7 @@ import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
 
 import edu.clemson.tanapasafari.constants.Constants;
 import edu.clemson.tanapasafari.db.TanapaDbHelper;
+import edu.clemson.tanapasafari.model.ReportType;
 import edu.clemson.tanapasafari.model.SafariListItem;
 import edu.clemson.tanapasafari.service.GPSTracker;
 import edu.clemson.tanapasafari.service.GPSTrackerSingleton;
@@ -103,7 +104,35 @@ public class MainActivity extends Activity {
 			
 		});
 		
+		String url = getString(R.string.base_url) + "/report_types.php";
+		WebServiceClientHelper.doGet(url, reportTypesResponseHandler);
+
+		
+		
+		
 	}
+	
+	private final ResponseHandler reportTypesResponseHandler = new ResponseHandler() {
+
+		@Override
+		public void onResponse(Response r) {
+			try {
+				JSONObject jsonObject = new JSONObject(r.getData());
+				JSONArray resultsArray = jsonObject.getJSONArray("results");
+				TanapaDbHelper.getInstance(getBaseContext()).deleteReportTypes();
+				for ( int i = 0; i < resultsArray.length(); i++ ) {
+					JSONObject reportTypeJson = resultsArray.getJSONObject(i);
+					ReportType reportType = new ReportType();
+					reportType.setId(reportTypeJson.getInt("id"));
+					reportType.setName(reportTypeJson.getString("name"));
+					TanapaDbHelper.getInstance(getBaseContext()).saveReportType(reportType);
+				}
+			} catch (JSONException e) {
+				Log.e(Constants.LOGGING_TAG, "Error occurred while retrieving report types from web service.", e);
+			}
+		}
+		
+	};
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {

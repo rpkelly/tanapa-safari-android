@@ -105,9 +105,14 @@ public class SafariActivity extends Activity {
 							for (int i= 0; i < jsonPointsOfInterest.length(); i++) {
 								JSONObject currentObject = (JSONObject) jsonPointsOfInterest.get(i);
 								SafariPointOfInterest safariPointOfInterest = new SafariPointOfInterest(currentObject);
+								
+					        	if ( safariPointOfInterest.getMedia() != null ) {
+					    			// prefetch the images asynchronously.
+					    			UrlImageViewHelper.loadUrlDrawable(getBaseContext(), getString(R.string.base_url) + safariPointOfInterest.getMedia().getUrl());
+					    		}
+						        
 								TanapaDbHelper.getInstance(getBaseContext()).saveSafariPointOfInterest(safariPointOfInterest);
 							}
-							
 						}
 						loadGuideActivity();
 					}

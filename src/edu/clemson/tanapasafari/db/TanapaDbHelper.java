@@ -14,13 +14,14 @@ import android.util.Log;
 import edu.clemson.tanapasafari.constants.Constants;
 import edu.clemson.tanapasafari.model.Media;
 import edu.clemson.tanapasafari.model.Report;
+import edu.clemson.tanapasafari.model.ReportType;
 import edu.clemson.tanapasafari.model.SafariPointOfInterest;
 import edu.clemson.tanapasafari.model.SafariWayPoint;
 import edu.clemson.tanapasafari.model.UserLog;
 
 public class TanapaDbHelper extends SQLiteOpenHelper {
 
-	public static final int DATABASE_VERSION = 14;
+	public static final int DATABASE_VERSION = 15;
 	public static final String DATABASE_NAME = "tanapa.db";
 	
 	
@@ -30,7 +31,7 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 		"CREATE TABLE REPORT ( id INTEGER PRIMARY KEY, report_type_id INTEGER NOT NULL, content	TEXT, time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, latitude DECIMAL, longitude DECIMAL, user_id INTEGER NOT NULL, report_media_id INTEGER, synchronized INTEGER DEFAULT(0))",
 		"CREATE TABLE SAFARI ( id INTEGER PRIMARY KEY, name	VARCHAR(80) NOT NULL, description TEXT, header_media_id INTEGER, footer_media_id INTEGER, tile_media_id	INTEGER)",
 		"CREATE TABLE SAFARI_WAYPOINTS (id INTEGER PRIMARY KEY, sequence INTEGER NOT NULL, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, safari_id INTEGER NOT NULL)",
-		"CREATE TABLE SAFARI_POINTS_OF_INTEREST ( id INTEGER PRIMARY KEY, name VARCHAR(80) NOT NULL, safari_id INTEGER NOT NULL, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, radius INTEGER NOT NULL)",
+		"CREATE TABLE SAFARI_POINTS_OF_INTEREST ( id INTEGER PRIMARY KEY, name VARCHAR(80) NOT NULL, media_id INTEGER NOT NULL, safari_id INTEGER NOT NULL, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, radius INTEGER NOT NULL)",
 		"CREATE TABLE USER_LOG (id INTEGER PRIMARY KEY, latitude DECIMAL NOT NULL, longitude DECIMAL NOT NULL, time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, user_id INTEGER NOT NULL, synchronized INTEGER NOT NULL DEFAULT 0)"
 	};
 	
@@ -183,6 +184,14 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 	}
 	
 	public void saveSafariPointOfInterest(SafariPointOfInterest poi) {
+		
+		if ( poi.getMedia() != null ) {
+			ContentValues mediaContentValues = new ContentValues();
+			mediaContentValues.put("type", poi.getMedia().getType());
+			mediaContentValues.put("url", poi.getMedia().getUrl());
+			poi.getMedia().setId(this.getWritableDatabase().insert("MEDIA", "type", mediaContentValues));
+		}
+		
 		ContentValues poiContentValues = new ContentValues();
 		poiContentValues.put("id", poi.getId());
 		poiContentValues.put("name", poi.getName());
@@ -190,12 +199,13 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 		poiContentValues.put("longitude", poi.getLongitude());
 		poiContentValues.put("radius", poi.getRadius());
 		poiContentValues.put("safari_id", poi.getSafariId());
+		poiContentValues.put("media_id", poi.getMedia().getId());
 		this.getWritableDatabase().insert("SAFARI_POINTS_OF_INTEREST", null, poiContentValues);
 	}
 	
 	public List<SafariPointOfInterest> getSafariPointsOfInterest(int safariId) {
 		List<SafariPointOfInterest> results = new ArrayList<SafariPointOfInterest>();
-		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT * FROM SAFARI_POINTS_OF_INTEREST", null);
+		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT poi.id, poi.name, poi.latitude, poi.longitude, poi.radius, poi.safari_id, poi.media_id, m.type, m.url FROM SAFARI_POINTS_OF_INTEREST poi LEFT JOIN MEDIA m ON m.id = poi.media_id", null);
 		if (cursor != null) {
 			while (cursor.moveToNext()) {
 				SafariPointOfInterest poi = new SafariPointOfInterest();
@@ -205,6 +215,13 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 				poi.setLongitude(cursor.getDouble(cursor.getColumnIndex("longitude")));
 				poi.setRadius(cursor.getInt(cursor.getColumnIndex("radius")));
 				poi.setSafariId(cursor.getInt(cursor.getColumnIndex("safari_id")));
+				if (!cursor.isNull(cursor.getColumnIndex("media_id"))) {
+					Media media = new Media();
+					media.setId(cursor.getLong(cursor.getColumnIndex("media_id")));
+					media.setType(cursor.getString(cursor.getColumnIndex("type")));
+					media.setUrl(cursor.getString(cursor.getColumnIndex("url")));
+					poi.setMedia(media);
+				}
 				results.add(poi);
 			}
 			cursor.close();
@@ -250,5 +267,32 @@ public class TanapaDbHelper extends SQLiteOpenHelper {
 		ContentValues values = new ContentValues();
 		values.put("synchronized", 1);
 		this.getWritableDatabase().update("USER_LOG", values, "id = ?", new String[]{Long.toString(userLogId)});
+	}
+	
+	
+	public void saveReportType(ReportType reportType) {
+		ContentValues reportTypeValues = new ContentValues();
+		reportTypeValues.put("id", reportType.getId());
+		reportTypeValues.put("name", reportType.getName());
+		this.getWritableDatabase().insert("REPORT_TYPE", null, reportTypeValues);
+	}
+	
+	public List<ReportType> getReportTypes(){
+		List<ReportType> reportTypes = new ArrayList<ReportType>();
+		Cursor cursor = this.getReadableDatabase().rawQuery("SELECT id, name FROM REPORT_TYPE", null);
+		if ( cursor != null ) {
+			while (cursor.moveToNext()) {
+				ReportType reportType = new ReportType();
+				reportType.setId(cursor.getInt(cursor.getColumnIndex("id")));
+				reportType.setName(cursor.getString(cursor.getColumnIndex("name")));
+				reportTypes.add(reportType);
+			}
+			cursor.close();
+		}
+		return reportTypes;
+	}
+	
+	public void deleteReportTypes() {
+		this.getWritableDatabase().delete("REPORT_TYPE", null, null);
 	}
 }

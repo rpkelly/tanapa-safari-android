@@ -9,13 +9,15 @@ public class SafariPointOfInterest {
 	
 	private int id;
 	private String name;
+	private Media media;
 	private double latitude;
 	private double longitude;
 	private int radius;
 	private int safariId;
 	private boolean inGeofence = false;
 	private Location location;
-	private String description;
+	private boolean displayed = false;
+	
 	
 	
 	public SafariPointOfInterest() {
@@ -65,13 +67,15 @@ public class SafariPointOfInterest {
 				e.printStackTrace();
 			}
 		}
-		if (jsonObject.has("description")){
+		
+		if ( jsonObject.has("media")) {
 			try {
-				this.description = jsonObject.getString("description");
+				this.media = new Media(jsonObject.getJSONObject("media"));
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 		}
+		
 	}
 	
 	public int getId() {
@@ -110,12 +114,6 @@ public class SafariPointOfInterest {
 	public void setSafariId(int safariId) {
 		this.safariId = safariId;
 	}	
-	public String getDescription() {
-		return description;
-	}
-	public void setDescription(String s){
-		this.description = s;
-	}
 	
 	public boolean isInGeofence() {
 		return inGeofence;
@@ -133,5 +131,34 @@ public class SafariPointOfInterest {
 		}
 		return location;
 	}
+
+	public Media getMedia() {
+		return media;
+	}
+
+	public void setMedia(Media media) {
+		this.media = media;
+	}
+
+	public boolean isDisplayed() {
+		return displayed;
+	}
+
+	public void setDisplayed(boolean displayed) {
+		this.displayed = displayed;
+	}
+
+	@Override
+	public String toString() {
+		return "SafariPointOfInterest [id=" + id + ", name=" + name
+				+ ", media=" + media + ", latitude=" + latitude
+				+ ", longitude=" + longitude + ", radius=" + radius
+				+ ", safariId=" + safariId + ", inGeofence=" + inGeofence
+				+ ", displayed=" + displayed + "]";
+	}
+	
+	
+	
+	
 	
 }

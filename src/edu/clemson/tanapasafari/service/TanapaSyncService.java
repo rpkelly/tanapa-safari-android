@@ -7,7 +7,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.IntentService;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 import edu.clemson.tanapasafari.R;
 import edu.clemson.tanapasafari.constants.Constants;
@@ -28,11 +31,26 @@ public class TanapaSyncService extends IntentService {
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		Log.d(Constants.LOGGING_TAG, "Starting TANAPA Sync Service processing.");
-		synchronizeReports();
-		synchronizeUserLogs();
-		
+		if (isOnline()) {
+			try {
+				synchronizeReports();
+				synchronizeUserLogs();
+			} catch (Throwable t) {
+				// Don't let anything stop this service.
+			}
+		}
 		
 	}	
+	
+	public boolean isOnline() {
+	    ConnectivityManager cm =
+	        (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+	    NetworkInfo netInfo = cm.getActiveNetworkInfo();
+	    if (netInfo != null && netInfo.isConnected()) {
+	        return true;
+	    }
+	    return false;
+	}
 	
 	private void synchronizeReports() {
 		List<Report> unsynchedReports = TanapaDbHelper.getInstance(null).findUnsynchronizedReports();
@@ -54,6 +72,9 @@ public class TanapaSyncService extends IntentService {
 
 				@Override
 				public void onResponse(Response r) {
+					if (r == null) {
+						return;
+					}
 					Log.d(Constants.LOGGING_TAG, "Media synch response: " + r.getData());
 					if (r.getResponseCode() == 200) {
 						try {
@@ -68,6 +89,9 @@ public class TanapaSyncService extends IntentService {
 	
 								@Override
 								public void onResponse(Response r) {
+									if (r == null) {
+										return;
+									}
 									Log.d(Constants.LOGGING_TAG, "Report synch response for report " + report.getId() + ": " + r.getData());
 									if (r.getResponseCode() == 200) {
 										Log.d(Constants.LOGGING_TAG, "Marking report as synched: " + report.getId());
@@ -93,6 +117,9 @@ public class TanapaSyncService extends IntentService {
 
 				@Override
 				public void onResponse(Response r) {
+					if (r == null) {
+						return;
+					}
 					Log.d(Constants.LOGGING_TAG, "Report synch response for report " + report.getId() + ": " + r.getData());
 					if (r.getResponseCode() == 200) {
 						Log.d(Constants.LOGGING_TAG, "Marking report as synched: " + report.getId());
@@ -121,6 +148,9 @@ public class TanapaSyncService extends IntentService {
 		WebServiceClientHelper.doPost(url, userLogJsonObject.toString(), "application/json", new ResponseHandler() {
 			@Override
 			public void onResponse(Response r) {
+				if (r == null) {
+					return;
+				}
 				Log.d(Constants.LOGGING_TAG, "User log synch response for user log " + userLog.getId() + ": " + r.getData());
 				if (r.getResponseCode() == 200) {
 					Log.d(Constants.LOGGING_TAG, "Marking user log as synched: " + userLog.getId());

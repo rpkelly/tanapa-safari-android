@@ -12,6 +12,36 @@ public class Media {
 	private String type;
 	private String url;
 	
+	
+	public Media () {
+		super();
+	}
+	
+	public Media(JSONObject jsonObject) {
+		super();
+		if (jsonObject.has("id")) {
+			try {
+				this.id = jsonObject.getLong("id");
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+		if (jsonObject.has("type")) {
+			try {
+				this.type = jsonObject.getString("type");
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+		if (jsonObject.has("url")) {
+			try {
+				this.url = jsonObject.getString("url");
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public long getId() {
 		return id;
 	}

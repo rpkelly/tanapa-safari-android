@@ -5,17 +5,10 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
     
-    <TextView 
-        android:id="@+id/poiTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="50sp" 
-        android:text="poiTitle"/>
-    <TextView 
-        android:id="@+id/poiText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="25sp"
-        android:text="poiText"/>    
+   <ImageView 
+   		android:id="@+id/POI_imageView"
+   		android:layout_width="fill_parent"
+   		android:layout_height="fill_parent" 
+   		android:contentDescription="@string/poi_description"/>   
 
 </LinearLayout>

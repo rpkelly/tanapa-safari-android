@@ -2,14 +2,9 @@ package edu.clemson.tanapasafari;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -41,9 +36,7 @@ import edu.clemson.tanapasafari.model.User;
 import edu.clemson.tanapasafari.model.UserIdListener;
 import edu.clemson.tanapasafari.service.GPSTracker;
 import edu.clemson.tanapasafari.service.GPSTrackerSingleton;
-import edu.clemson.tanapasafari.webservice.Response;
-import edu.clemson.tanapasafari.webservice.ResponseHandler;
-import edu.clemson.tanapasafari.webservice.WebServiceClientHelper;
+
 
 public class ReportActivity extends Activity {
 
@@ -74,28 +67,7 @@ public class ReportActivity extends Activity {
 		
 	};
 	
-	private final ResponseHandler reportTypesResponseHandler = new ResponseHandler() {
-
-		@Override
-		public void onResponse(Response r) {
-			try {
-				List<ReportType> reportTypes = new ArrayList<ReportType>();
-				JSONObject jsonObject = new JSONObject(r.getData());
-				JSONArray resultsArray = jsonObject.getJSONArray("results");
-				for ( int i = 0; i < resultsArray.length(); i++ ) {
-					JSONObject reportTypeJson = resultsArray.getJSONObject(i);
-					ReportType reportType = new ReportType();
-					reportType.setId(reportTypeJson.getInt("id"));
-					reportType.setName(reportTypeJson.getString("name"));
-					reportTypes.add(reportType);
-				}
-				setReportTypeSpinnerValues(reportTypes);
-			} catch (JSONException e) {
-				Log.e(Constants.LOGGING_TAG, "Error occurred while retrieving report types from web service.", e);
-			}
-		}
-		
-	};
+	
 	
 	
 	private final OnClickListener btnCapturePictureOnClickListener = new OnClickListener() {
@@ -126,9 +98,6 @@ public class ReportActivity extends Activity {
 		Button saveButton = (Button) findViewById(R.id.report_saveButton);
 		saveButton.setOnClickListener(saveButtonOnClickListener);
 		
-		String url = getString(R.string.base_url) + "/report_types.php";
-		WebServiceClientHelper.doGet(url, reportTypesResponseHandler);
-
 		imgPreview = (ImageView) findViewById(R.id.report_imgPreview);
         videoPreview = (VideoView) findViewById(R.id.report_videoPreview);
         btnCapturePicture = (Button) findViewById(R.id.report_btnCapturePicture);
@@ -136,6 +105,10 @@ public class ReportActivity extends Activity {
  
         btnCapturePicture.setOnClickListener(btnCapturePictureOnClickListener);
         btnRecordVideo.setOnClickListener(btnRecordVideoOnClickListener);
+        
+        List<ReportType> reportTypes = TanapaDbHelper.getInstance(this).getReportTypes();
+        setReportTypeSpinnerValues(reportTypes);
+        
 	}
 	
 	
