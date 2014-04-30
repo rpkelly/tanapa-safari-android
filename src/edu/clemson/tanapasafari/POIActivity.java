@@ -1,11 +1,13 @@
 package edu.clemson.tanapasafari;
 
+import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
+import android.widget.ImageView;
 
 public class POIActivity extends Activity{
 
@@ -15,11 +17,10 @@ public class POIActivity extends Activity{
 		
 		Intent intent = getIntent();
 		
-		TextView title = (TextView) findViewById(R.id.poiTitle);
-		TextView info = (TextView) findViewById(R.id.poiText);
+		ImageView imageView = (ImageView) findViewById(R.id.POI_imageView);
 		
-		title.setText(intent.getStringExtra("poiName"));
-		info.setText(intent.getStringExtra("poiDescription"));
+		UrlImageViewHelper.setUrlDrawable(imageView, 
+				getString(R.string.base_url) + intent.getStringExtra("mediaUrl"));
 			
 	}
 	

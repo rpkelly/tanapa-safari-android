@@ -40,7 +40,8 @@ public class User {
 						try {
 							Log.d(Constants.LOGGING_TAG, "Response received from the webservice: " + r.getData());
 							// Parse out the user id returned from the server.
-							JSONObject jsonObject = new JSONObject(r.getData());
+							JSONObject results = new JSONObject(r.getData());
+							JSONObject jsonObject = results.getJSONArray("results").getJSONObject(0);
 							int userId = jsonObject.getInt("id");
 							// Save off this new user id to shared preferences.
 							prefs.edit().putInt("user_id", userId);
