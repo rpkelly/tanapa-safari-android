@@ -1,35 +1,72 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView 
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/report_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="edu.clemson.tanapasafari.ReportActivity"
-    tools:ignore="MergeRootFrame"
-    android:orientation="vertical">
+    tools:ignore="MergeRootFrame">
     
-     <ImageView
-        android:id="@+id/report_headerImageView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/main_header"/>
-     
-     <Spinner
-    	android:id="@+id/report_reportTypeSpinner"
-    	android:layout_width="fill_parent"
-    	android:layout_height="wrap_content" />
-     
-     <EditText 
-        android:id="@+id/report_content"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:minLines="5" />
-     
-     <Button 
-        android:id="@+id/report_saveButton"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/save" />
-        
+	<LinearLayout 
+	    android:id="@+id/report_container"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:orientation="vertical">
+	    
+		<ImageView
+        	android:id="@+id/report_headerImageView"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:src="@drawable/main_header"
+	        android:contentDescription="@string/header_image"/>
+	     
+     	<Spinner
+	    	android:id="@+id/report_reportTypeSpinner"
+	    	android:layout_width="fill_parent"
+	    	android:layout_height="wrap_content" />
+	     
+     	<EditText 
+	        android:id="@+id/report_content"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:minLines="5" 
+	        android:hint="@string/report_text"/>
+	     
+     	<!-- Capture picture button -->
+        <Button
+            android:id="@+id/report_btnCapturePicture"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/add_image"
+            android:layout_marginBottom="10dp"/>
+ 
+        <!-- Record video button -->
+        <Button
+            android:id="@+id/report_btnRecordVideo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/add_video" />
+	     
+      	<!-- To display picture taken -->
+        <ImageView
+            android:id="@+id/report_imgPreview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone" 
+            android:contentDescription="@string/image_preview"/>
+	 
+        <!-- To preview video recorded -->
+        <VideoView
+            android:id="@+id/report_videoPreview"
+            android:layout_width="wrap_content"
+            android:layout_height="400dp"
+            android:visibility="gone" />
+	     
+		<Button 
+		    android:id="@+id/report_saveButton"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:text="@string/save" />
     
+	</LinearLayout>
     
-</LinearLayout>
+</ScrollView>

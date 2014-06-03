@@ -12,7 +12,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
+// import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -20,6 +20,7 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import edu.clemson.tanapasafari.constants.Constants;
 import edu.clemson.tanapasafari.db.TanapaDbHelper;
 import edu.clemson.tanapasafari.model.SafariPointOfInterest;
 import edu.clemson.tanapasafari.model.SafariWayPoint;
@@ -103,21 +104,24 @@ public class GuideActivity extends Activity {
 			}
     	});
         
-	}
-        	
-        	
+	}	
 	
-	
-	private void checkPointsOfInterest(Location l) {
-		for ( SafariPointOfInterest poi : safariPointsOfInterest) {
-			if (l.distanceTo(poi.getLocation()) < poi.getRadius()) {
-				if (!poi.isInGeofence()) {
-					poi.setInGeofence(true);
-					showToastText("Entered POI Geofence: " + poi.getName());
-				}
+	private synchronized void checkPointsOfInterest(Location l) {
+		Log.d(Constants.LOGGING_TAG, "Checking points of interest.");
+		for (int i = 0; i < safariPointsOfInterest.size(); i++) {
+			SafariPointOfInterest poi = safariPointsOfInterest.get(i);
+			Log.d(Constants.LOGGING_TAG, "Checking POI: " + poi.getName());
+			if (!poi.isDisplayed() && !poi.isInGeofence()  && l.distanceTo(poi.getLocation()) < poi.getRadius()) {
+				Log.d(Constants.LOGGING_TAG, "Displaying POI: " + poi.toString());
+				poi.setInGeofence(true);
+				poi.setDisplayed(true);
+				Intent poiActivityIntent = new Intent(this, POIActivity.class);
+				poiActivityIntent.putExtra("poiName", poi.getName());
+				poiActivityIntent.putExtra("mediaUrl", poi.getMedia().getUrl());
+				startActivity(poiActivityIntent);
 			} else {
 				if (poi.isInGeofence()) {
-					showToastText("Exited POI Geofence: " + poi.getName());
+					//showToastText("Exited POI Geofence: " + poi.getName());
 				}
 				poi.setInGeofence(false);
 			}
@@ -152,9 +156,11 @@ public class GuideActivity extends Activity {
 		startActivity(reportIntent);
 	}
 	
+	/*
 	private void showToastText(String msg) {
 		Toast.makeText(getApplicationContext(), msg,
 				Toast.LENGTH_LONG).show();
 	}
+	*/
 	
 }

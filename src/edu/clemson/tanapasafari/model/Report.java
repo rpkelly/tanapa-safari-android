@@ -105,11 +105,11 @@ public class Report {
 			reportJson.put("longitude", this.getLongitude());
 			reportJson.put("user_id", this.getUserId());
 			if (this.media != null) {
-				//reportJson.put("media", media.toJSON());
+				reportJson.put("media", media.toJSON());
 			}
 			reportJson.put("synch", this.synch);
 		} catch (JSONException e) {
-			Log.e(Constants.LOGGING_TAG, "Error occurred while serializing User object to JSON.", e);
+			Log.e(Constants.LOGGING_TAG, "Error occurred while serializing Report object to JSON.", e);
 		}
 		
 		return reportJson;

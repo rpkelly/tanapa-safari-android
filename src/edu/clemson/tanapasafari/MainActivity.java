@@ -13,8 +13,6 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -30,6 +28,7 @@ import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
 
 import edu.clemson.tanapasafari.constants.Constants;
 import edu.clemson.tanapasafari.db.TanapaDbHelper;
+import edu.clemson.tanapasafari.model.ReportType;
 import edu.clemson.tanapasafari.model.SafariListItem;
 import edu.clemson.tanapasafari.service.GPSTracker;
 import edu.clemson.tanapasafari.service.GPSTrackerSingleton;
@@ -52,17 +51,18 @@ public class MainActivity extends Activity {
 		
 	};
 	
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.activity_main);
-				
-		SharedPreferences prefs = getSharedPreferences("userpreferences", Context.MODE_PRIVATE);
-		Editor editor = prefs.edit(); 
-		editor.clear();
-		editor.commit();
+		
+		/*
+		 * SharedPreferences prefs = getSharedPreferences("userpreferences", Context.MODE_PRIVATE);
+		 * Editor editor = prefs.edit(); 
+		 * editor.clear();
+		 * editor.commit();
+		 */
 		
 		// Go ahead and initialize the internal database.
 		TanapaDbHelper.getInstance(this);
@@ -104,35 +104,35 @@ public class MainActivity extends Activity {
 			
 		});
 		
-		boolean isUser = false;
-		Log.d("Hello", "Right before hasUser call");
-		isUser = TanapaDbHelper.getInstance(getBaseContext()).hasUser();
-		Log.d("", "Right after hasUser call");
-		if(!isUser){
-			WebServiceClientHelper.doGet(getString(R.string.base_url) + "/user.php", new ResponseHandler(){
-				
-				@Override
-				public void onResponse(Response r) {
-					try {
-						JSONObject jsonResponse = new JSONObject(r.getData());
-						Log.d(Constants.LOGGING_TAG, jsonResponse.toString());
-						JSONArray jsonUser  = jsonResponse.getJSONArray("results");
-						for (int i = 0; i < jsonUser.length(); i++) {
-							JSONObject currentObject = (JSONObject) jsonUser.get(i);
-							if(currentObject.has("id")){
-								TanapaDbHelper.getInstance(getBaseContext()).addUser(currentObject.getInt("id"));
-							}
-						}
-					} catch (JSONException e) {
-						
-						e.printStackTrace();
-					}
-				}
-				
-			});
-		}
+		String url = getString(R.string.base_url) + "/report_types.php";
+		WebServiceClientHelper.doGet(url, reportTypesResponseHandler);
+
+		
+		
 		
 	}
+	
+	private final ResponseHandler reportTypesResponseHandler = new ResponseHandler() {
+
+		@Override
+		public void onResponse(Response r) {
+			try {
+				JSONObject jsonObject = new JSONObject(r.getData());
+				JSONArray resultsArray = jsonObject.getJSONArray("results");
+				TanapaDbHelper.getInstance(getBaseContext()).deleteReportTypes();
+				for ( int i = 0; i < resultsArray.length(); i++ ) {
+					JSONObject reportTypeJson = resultsArray.getJSONObject(i);
+					ReportType reportType = new ReportType();
+					reportType.setId(reportTypeJson.getInt("id"));
+					reportType.setName(reportTypeJson.getString("name"));
+					TanapaDbHelper.getInstance(getBaseContext()).saveReportType(reportType);
+				}
+			} catch (JSONException e) {
+				Log.e(Constants.LOGGING_TAG, "Error occurred while retrieving report types from web service.", e);
+			}
+		}
+		
+	};
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
